@@ -1,4 +1,4 @@
-package com.example.riregi
+package com.riregi
 
 import io.flutter.embedding.android.FlutterActivity
 
