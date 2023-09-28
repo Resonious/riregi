@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+//import 'package:flutter/services.dart';
 
 void main() {
+  //const platform = MethodChannel('com.riregi/lib');
   runApp(const MyApp());
 }
 
@@ -63,14 +67,18 @@ class MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(2.0),
+    var dl = DynamicLibrary.process();
+    var yess = dl.providesSymbol("rr_start");
+
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
       child: Center(
         child: Row(
           children: [
-            Text('-1'),
-            Text('Tacos x1'),
-            Text('+1'),
+            const Text('-1'),
+            const Text('Tacos x1'),
+            const Text('+1'),
+            Text(yess.toString()),
           ],
         ),
       ),
