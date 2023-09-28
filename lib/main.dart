@@ -1,20 +1,62 @@
+import 'dart:developer';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
+import 'package:ffi/ffi.dart';
 
 void main() {
-  //const platform = MethodChannel('com.riregi/lib');
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _AppState();
+}
+
+// export fn rr_start(dir_path_ptr: [*:0]const u8, dir_path_len: u32) ?*anyopaque {
+typedef RRStartFuncNative = Pointer<Void> Function(Pointer<Utf8>, Uint32);
+typedef RRStartFunc = Pointer<Void> Function(Pointer<Utf8>, int);
+// export fn rr_cleanup(app_state_ptr: *anyopaque) void {
+typedef RRCleanupFuncNative = Void Function(Pointer<Void>);
+typedef RRCleanupFunc = void Function(Pointer<Void>);
+
+class ActiveAppState {
+  final DynamicLibrary lib;
+  late final RRStartFunc rrStart;
+  late final RRCleanupFunc rrCleanup;
+
+  ActiveAppState({required this.lib}) {
+    rrStart = lib.lookupFunction<RRStartFuncNative, RRStartFunc>("rr_start");
+    rrCleanup =
+        lib.lookupFunction<RRCleanupFuncNative, RRCleanupFunc>("rr_cleanup");
+  }
+}
+
+class _AppState extends State<MyApp> {
+  ActiveAppState? app;
+
   @override
   Widget build(BuildContext context) {
     const title = 'リレジ';
+
+    if (app == null) {
+      const platform = MethodChannel('com.riregi/lib');
+
+      platform.invokeMethod<String>("getDataLibPath").then((value) {
+        setState(() {
+          if (value == null) {
+            log('I think we are going down');
+            app = ActiveAppState(lib: DynamicLibrary.process());
+          } else {
+            log('YES!! $value');
+            app = ActiveAppState(lib: DynamicLibrary.open(value));
+          }
+        });
+      });
+    }
 
     return MaterialApp(
       title: title,
@@ -37,13 +79,15 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: title),
+      home: app == null
+          ? const Text('wouhn')
+          : MyHomePage(title: title, app: app!),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.app});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -55,6 +99,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+  final ActiveAppState app;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -67,18 +112,14 @@ class MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var dl = DynamicLibrary.process();
-    var yess = dl.providesSymbol("rr_start");
-
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
+    return const Padding(
+      padding: EdgeInsets.all(2.0),
       child: Center(
         child: Row(
           children: [
-            const Text('-1'),
-            const Text('Tacos x1'),
-            const Text('+1'),
-            Text(yess.toString()),
+            Text('-1'),
+            Text('Tacos x1'),
+            Text('+1'),
           ],
         ),
       ),
@@ -90,6 +131,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
+    // TODO: I need a directory I can actually F with.
+    // widget.app.rrStart();
+
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
