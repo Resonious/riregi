@@ -22,6 +22,8 @@ class MainActivity: FlutterActivity() {
                     PackageManager.GET_SHARED_LIBRARY_FILES,
                 )
                 result.success(ainfo.nativeLibraryDir + "/libriregi-data.so")
+            } else if (call.method == "getDataPath") {
+                result.success(context.dataDir.path)
             } else {
                 result.notImplemented();
             }

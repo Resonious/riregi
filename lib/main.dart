@@ -17,21 +17,88 @@ class MyApp extends StatefulWidget {
 }
 
 // export fn rr_start(dir_path_ptr: [*:0]const u8, dir_path_len: u32) ?*anyopaque {
-typedef RRStartFuncNative = Pointer<Void> Function(Pointer<Utf8>, Uint32);
-typedef RRStartFunc = Pointer<Void> Function(Pointer<Utf8>, int);
+typedef RRStartNative = Pointer<Void> Function(Pointer<Utf8>, Uint32);
+typedef RRStart = Pointer<Void> Function(Pointer<Utf8>, int);
 // export fn rr_cleanup(app_state_ptr: *anyopaque) void {
-typedef RRCleanupFuncNative = Void Function(Pointer<Void>);
-typedef RRCleanupFunc = void Function(Pointer<Void>);
+typedef RRCleanupNative = Void Function(Pointer<Void>);
+typedef RRCleanup = void Function(Pointer<Void>);
+
+// export fn rr_get_error() [*c]const u8 {
+typedef RRGetErrorNative = Pointer<Utf8> Function();
+typedef RRGetError = RRGetErrorNative;
+
+// export fn rr_menu_len(app_state_ptr: *anyopaque) u32 {
+typedef RRMenuLenNative = Uint32 Function(Pointer<Void>);
+typedef RRMenuLen = int Function(Pointer<Void>);
+
+// export fn rr_menu_add(
+//     app_state_ptr: *anyopaque,
+//     price: i64,
+//     name: [*c]const u8,
+//     name_len: u32,
+//     image_path: [*c]const u8,
+//     image_path_len: u32,
+// ) c_int {
+typedef RRMenuAddNative = Int Function(
+  Pointer<Void>,
+  Int64,
+  Pointer<Utf8>,
+  Uint32,
+  Pointer<Utf8>,
+  Uint32,
+);
+typedef RRMenuAdd = int Function(
+  Pointer<Void>,
+  int,
+  Pointer<Utf8>,
+  int,
+  Pointer<Utf8>,
+  int,
+);
+
+// export fn rr_menu_item_name(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
+typedef RRMenuItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
+typedef RRMenuItemName = Pointer<Utf8> Function(Pointer<Void>, int);
+
+// export fn rr_menu_item_image_path(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
+typedef RRMenuItemImagePathNative = Pointer<Utf8> Function(
+  Pointer<Void>,
+  Uint32,
+);
+typedef RRMenuItemImagePath = Pointer<Utf8> Function(
+  Pointer<Void>,
+  int,
+);
+
+// export fn rr_menu_item_price(app_state_ptr: *anyopaque, index: u32) i64 {
+typedef RRMenuItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
+typedef RRMenuItemPrice = Int64 Function(Pointer<Void>, int);
 
 class ActiveAppState {
   final DynamicLibrary lib;
-  late final RRStartFunc rrStart;
-  late final RRCleanupFunc rrCleanup;
+  final String dataPath;
+  late final RRStart rrStart;
+  late final RRCleanup rrCleanup;
+  late final RRMenuAdd rrMenuAdd;
+  late final RRMenuLen rrMenuLen;
+  late final RRMenuItemName rrMenuItemName;
 
-  ActiveAppState({required this.lib}) {
-    rrStart = lib.lookupFunction<RRStartFuncNative, RRStartFunc>("rr_start");
-    rrCleanup =
-        lib.lookupFunction<RRCleanupFuncNative, RRCleanupFunc>("rr_cleanup");
+  late final Pointer<Void> ctx;
+
+  ActiveAppState({required this.lib, required this.dataPath}) {
+    rrStart = lib.lookupFunction<RRStartNative, RRStart>("rr_start");
+    rrCleanup = lib.lookupFunction<RRCleanupNative, RRCleanup>("rr_cleanup");
+    rrMenuAdd = lib.lookupFunction<RRMenuAddNative, RRMenuAdd>("rr_menu_add");
+    rrMenuLen = lib.lookupFunction<RRMenuLenNative, RRMenuLen>("rr_menu_len");
+    rrMenuItemName = lib.lookupFunction<RRMenuItemNameNative, RRMenuItemName>(
+      "rr_menu_item_name",
+    );
+
+    final path = dataPath.toNativeUtf8();
+    ctx = rrStart(path, path.length);
+    if (ctx.address == 0) {
+      log('we have a problem');
+    }
   }
 }
 
@@ -45,15 +112,19 @@ class _AppState extends State<MyApp> {
     if (app == null) {
       const platform = MethodChannel('com.riregi/lib');
 
-      platform.invokeMethod<String>("getDataLibPath").then((value) {
+      Future.wait([
+        platform.invokeMethod<String>("getDataLibPath"),
+        platform.invokeMethod<String>("getDataPath"),
+      ]).then((value) {
         setState(() {
-          if (value == null) {
-            log('I think we are going down');
-            app = ActiveAppState(lib: DynamicLibrary.process());
-          } else {
-            log('YES!! $value');
-            app = ActiveAppState(lib: DynamicLibrary.open(value));
-          }
+          var libPath = value[0]!;
+          var dataPath = value[1]!;
+
+          log('YES!! $value');
+          app = ActiveAppState(
+            lib: DynamicLibrary.open(libPath),
+            dataPath: dataPath,
+          );
         });
       });
     }
@@ -128,24 +199,27 @@ class MenuItemCard extends StatelessWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final nameController = TextEditingController();
 
   void _incrementCounter() {
-    // TODO: I need a directory I can actually F with.
-    // widget.app.rrStart();
-
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      final name = nameController.text.toNativeUtf8();
+
+      widget.app.rrMenuAdd(
+        widget.app.ctx,
+        999,
+        name,
+        name.length,
+        name,
+        name.length,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final itemCount = widget.app.rrMenuLen(widget.app.ctx);
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -172,11 +246,18 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            TextField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Name of new menu item',
+              ),
+              controller: nameController,
+            ),
             const Text(
-              'You have pushed the button this many times:',
+              'You have this many MENU ITEMS, man!!',
             ),
             Text(
-              '$_counter',
+              '$itemCount',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const MenuItemCard(),
