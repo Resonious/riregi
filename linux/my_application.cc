@@ -10,9 +10,34 @@
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  FlMethodChannel* dart_channel;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+static void dart_method_call_handler(FlMethodChannel* channel,
+                                     FlMethodCall* method_call,
+                                     gpointer user_data) {
+  g_autoptr(FlMethodResponse) response = nullptr;
+
+  if (strcmp(fl_method_call_get_name(method_call), "getDataLibPath") == 0) {
+    g_autoptr(FlValue) result = fl_value_new_string("/home/nigel/p/riregi-data/zig-out/lib/libriregi-data.so");
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  else if (strcmp(fl_method_call_get_name(method_call), "getDataPath") == 0) {
+    g_mkdir_with_parents("/home/nigel/p/riregi/.data", 0666);
+    g_autoptr(FlValue) result = fl_value_new_string("/home/nigel/p/riregi/.data");
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  else {
+    response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
+  }
+
+  g_autoptr(GError) error = nullptr;
+  if (!fl_method_call_respond(method_call, response, &error)) {
+    g_warning("Failed to send response: %s", error->message);
+  }
+}
 
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
@@ -59,6 +84,13 @@ static void my_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  self->dart_channel = fl_method_channel_new(
+    fl_engine_get_binary_messenger(fl_view_get_engine(view)),
+    "com.riregi/lib", FL_METHOD_CODEC(codec)
+  );
+  fl_method_channel_set_method_call_handler(self->dart_channel, dart_method_call_handler, self, nullptr);
+
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
@@ -85,6 +117,7 @@ static gboolean my_application_local_command_line(GApplication* application, gch
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_object(&self->dart_channel);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }
 
