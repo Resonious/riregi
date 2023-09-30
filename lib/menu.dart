@@ -416,7 +416,6 @@ class _MenuPageState extends State<MenuPage> {
       appBar: AppBar(
         title: const Text('メニュー編集'),
       ),
-
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
@@ -440,13 +439,36 @@ class _MenuPageState extends State<MenuPage> {
           },
         ),
       ),
+      bottomNavigationBar: const BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        child: Row(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.receipt_long),
+                Text('レジ'),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.edit_square),
+                Text('メニュー編集'),
+              ],
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
         onPressed: () {
           editMenuItemInModal(context, a, onSubmit: () => setState(() {}));
         },
         tooltip: '商品の新規作成',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
