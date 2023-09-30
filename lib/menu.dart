@@ -341,6 +341,16 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final name = a.rrMenuItemName(a.ctx, index).toDartString();
+    final price = a.rrMenuItemPrice(a.ctx, index).toString();
+
+    return Tooltip(
+      message: '$name ¥$price',
+      child: _content(context),
+    );
+  }
+
+  Widget _content(BuildContext context) {
     final imagePath = a.rrMenuItemImagePath(a.ctx, index).toDartString();
 
     if (imagePath.isNotEmpty && imagePath != 'none') {
