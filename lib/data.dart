@@ -79,6 +79,19 @@ typedef RRMenuItemImagePath = Pointer<Utf8> Function(
 typedef RRMenuItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
 typedef RRMenuItemPrice = int Function(Pointer<Void>, int);
 
+typedef RRMenuItemSetNameNative = Bool Function(
+    Pointer<Void>, Uint32, Pointer<Utf8>, Uint32);
+typedef RRMenuItemSetName = bool Function(
+    Pointer<Void>, int, Pointer<Utf8>, int);
+
+typedef RRMenuItemSetImagePathNative = Bool Function(
+    Pointer<Void>, Uint32, Pointer<Utf8>, Uint32);
+typedef RRMenuItemSetImagePath = bool Function(
+    Pointer<Void>, int, Pointer<Utf8>, int);
+
+typedef RRMenuItemSetPriceNative = Bool Function(Pointer<Void>, Uint32, Int64);
+typedef RRMenuItemSetPrice = bool Function(Pointer<Void>, int, int);
+
 class ActiveAppState {
   final DynamicLibrary lib;
   final String dataPath;
@@ -90,6 +103,9 @@ class ActiveAppState {
   late final RRMenuItemName rrMenuItemName;
   late final RRMenuItemImagePath rrMenuItemImagePath;
   late final RRMenuItemPrice rrMenuItemPrice;
+  late final RRMenuItemSetName rrMenuItemSetName;
+  late final RRMenuItemSetImagePath rrMenuItemSetImagePath;
+  late final RRMenuItemSetPrice rrMenuItemSetPrice;
 
   late final Pointer<Void> ctx;
 
@@ -110,6 +126,18 @@ class ActiveAppState {
     rrMenuItemPrice =
         lib.lookupFunction<RRMenuItemPriceNative, RRMenuItemPrice>(
       "rr_menu_item_price",
+    );
+    rrMenuItemSetName =
+        lib.lookupFunction<RRMenuItemSetNameNative, RRMenuItemSetName>(
+      "rr_menu_item_set_name",
+    );
+    rrMenuItemSetImagePath = lib
+        .lookupFunction<RRMenuItemSetImagePathNative, RRMenuItemSetImagePath>(
+      "rr_menu_item_set_image_path",
+    );
+    rrMenuItemSetPrice =
+        lib.lookupFunction<RRMenuItemSetPriceNative, RRMenuItemSetPrice>(
+      "rr_menu_item_set_price",
     );
 
     final path = dataPath.toNativeUtf8();

@@ -59,35 +59,31 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
       setState(() {
         selectedImage = File(picked.path);
       });
+
+      if (!isNew && await selectedImage!.exists()) {
+        final a = widget.app;
+        final newPath = picked.path.toNativeUtf8();
+        a.rrMenuItemSetImagePath(
+            a.ctx, widget.editIndex!, newPath, newPath.length);
+        widget.onSubmit();
+      }
     }
   }
 
-  _submit() {
+  _submitNew() {
     final a = widget.app;
     final name = nameController.text.toNativeUtf8();
     final price = int.tryParse(priceController.text) ?? 0;
     final imagePath = (selectedImage?.path ?? 'none').toNativeUtf8();
 
-    if (isNew) {
-      a.rrMenuAdd(
-        a.ctx,
-        price,
-        name,
-        name.length,
-        imagePath,
-        imagePath.length,
-      );
-    } else {
-      a.rrMenuUpdate(
-        a.ctx,
-        widget.editIndex!,
-        price,
-        name,
-        name.length,
-        imagePath,
-        imagePath.length,
-      );
-    }
+    a.rrMenuAdd(
+      a.ctx,
+      price,
+      name,
+      name.length,
+      imagePath,
+      imagePath.length,
+    );
   }
 
   bool get isNew => widget.editIndex == null;
@@ -154,9 +150,22 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                     onPressed: _pickImage,
                     child: const Text('画像'),
                   )
-                : _Image(
-                    onPressed: _pickImage,
-                    image: FileImage(selectedImage!),
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _Image(
+                        onPressed: _pickImage,
+                        image: FileImage(selectedImage!),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedImage = null;
+                          });
+                        },
+                        child: const Text('画像を削除'),
+                      ),
+                    ],
                   ),
           ),
           Padding(
@@ -164,6 +173,15 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
             child: TextFormField(
               controller: nameController,
               textInputAction: TextInputAction.next,
+              onChanged: isNew
+                  ? null
+                  : (value) {
+                      final a = widget.app;
+                      final newName = value.toNativeUtf8();
+                      a.rrMenuItemSetName(
+                          a.ctx, widget.editIndex!, newName, newName.length);
+                      widget.onSubmit();
+                    },
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: '商品名',
@@ -189,6 +207,16 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                       signed: true,
                       decimal: false,
                     ),
+                    onChanged: isNew
+                        ? null
+                        : (value) {
+                            final a = widget.app;
+                            final newPrice = int.tryParse(value);
+                            if (newPrice == null) return;
+                            a.rrMenuItemSetPrice(
+                                a.ctx, widget.editIndex!, newPrice);
+                            widget.onSubmit();
+                          },
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: '値段',
@@ -203,14 +231,14 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
               padding: const EdgeInsets.all(20),
               child: ElevatedButton(
                 onPressed: () {
-                  _submit();
+                  if (isNew) _submitNew();
                   Navigator.pop(context);
-                  widget.onSubmit();
+                  if (isNew) widget.onSubmit();
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
-                    isNew ? '追加' : '保存',
+                    isNew ? '追加' : '閉じる',
                     textScaleFactor: 1.4,
                   ),
                 ),
@@ -269,24 +297,30 @@ class _MenuItem extends StatelessWidget {
       );
     }
 
-    return Material(
-      color: Theme.of(context).cardColor,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(a.rrMenuItemName(a.ctx, index).toDartString()),
-            Row(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Material(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        child: InkWell(
+          onTap: onPressed,
+          child: Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.currency_yen,
-                  size: 10,
-                ),
-                Text(a.rrMenuItemPrice(a.ctx, index).toString()),
+                Text(a.rrMenuItemName(a.ctx, index).toDartString()),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.currency_yen,
+                      size: 10,
+                    ),
+                    Text(a.rrMenuItemPrice(a.ctx, index).toString()),
+                  ],
+                )
               ],
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );
