@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:image_picker/image_picker.dart';
 
@@ -29,36 +28,14 @@ class MenuPage extends StatefulWidget {
   State<MenuPage> createState() => _MenuPageState();
 }
 
-// BIG TODO
-// actually this whole file. make this a real page where you can view and edit
-// the whole menu.
-class MenuItemCard extends StatelessWidget {
-  const MenuItemCard({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(2.0),
-      child: Center(
-        child: Row(
-          children: [
-            Text('-1'),
-            Text('Tacos x1'),
-            Text('+1'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _NewMenuItemModal extends StatefulWidget {
-  const _NewMenuItemModal({required this.app, required this.onSubmit});
+  const _NewMenuItemModal(ActiveAppState a,
+      {required this.onSubmit, this.editIndex})
+      : app = a;
 
   final void Function() onSubmit;
   final ActiveAppState app;
+  final int? editIndex;
 
   @override
   State<_NewMenuItemModal> createState() => _NewMenuItemModalState();
@@ -91,13 +68,52 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
     final price = int.tryParse(priceController.text) ?? 0;
     final imagePath = (selectedImage?.path ?? 'none').toNativeUtf8();
 
-    a.rrMenuAdd(
-      a.ctx,
-      price,
-      name,
-      name.length,
-      imagePath,
-      imagePath.length,
+    if (isNew) {
+      a.rrMenuAdd(
+        a.ctx,
+        price,
+        name,
+        name.length,
+        imagePath,
+        imagePath.length,
+      );
+    } else {
+      a.rrMenuUpdate(
+        a.ctx,
+        widget.editIndex!,
+        price,
+        name,
+        name.length,
+        imagePath,
+        imagePath.length,
+      );
+    }
+  }
+
+  bool get isNew => widget.editIndex == null;
+  late String? _menuItemName;
+
+  @override
+  void initState() {
+    super.initState();
+    if (isNew) return;
+    final a = widget.app;
+    final i = widget.editIndex!;
+
+    _menuItemName = a.rrMenuItemName(a.ctx, i).toDartString();
+
+    nameController.text = _menuItemName!;
+    priceController.text = a.rrMenuItemPrice(a.ctx, i).toString();
+
+    selectedImage = File(a.rrMenuItemImagePath(a.ctx, i).toDartString());
+    selectedImage!.exists().then(
+      (exists) {
+        if (!exists) {
+          setState(() {
+            selectedImage = null;
+          });
+        }
+      },
     );
   }
 
@@ -107,12 +123,26 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
+          SizedBox(
             height: 30,
             child: Center(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Text('新しい商品'),
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: isNew
+                    ? const Text('新しい商品')
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _menuItemName!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text('を編集'),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -177,10 +207,10 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                   Navigator.pop(context);
                   widget.onSubmit();
                 },
-                child: const Padding(
-                  padding: EdgeInsets.all(5),
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
                   child: Text(
-                    '追加',
+                    isNew ? '追加' : '保存',
                     textScaleFactor: 1.4,
                   ),
                 ),
@@ -194,20 +224,21 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
 }
 
 class _Image extends StatelessWidget {
-  const _Image({required this.image, this.onPressed});
+  const _Image({required this.image, this.onPressed, this.size = 150});
 
+  final double size;
   final ImageProvider image;
   final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(size * 0.2),
       child: Material(
         child: Ink.image(
           fit: BoxFit.fill,
-          width: 150,
-          height: 150,
+          width: size,
+          height: size,
           image: image,
           child: InkWell(
             onTap: onPressed,
@@ -218,27 +249,74 @@ class _Image extends StatelessWidget {
   }
 }
 
-class _MenuPageState extends State<MenuPage> {
-  void _addMenuItem() {
-    setState(() {
-      // final name = nameController.text.toNativeUtf8();
-      final name = "crap".toNativeUtf8();
+class _MenuItem extends StatelessWidget {
+  const _MenuItem(ActiveAppState app, this.index, {this.onPressed}) : a = app;
 
-      widget.app.rrMenuAdd(
-        widget.app.ctx,
-        999,
-        name,
-        name.length,
-        name,
-        name.length,
-      );
-    });
-  }
+  final ActiveAppState a;
+  final int index;
+
+  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final imagePath = a.rrMenuItemImagePath(a.ctx, index).toDartString();
+
+    if (imagePath.isNotEmpty && imagePath != 'none') {
+      return _Image(
+        size: 80,
+        image: FileImage(File(imagePath)),
+        onPressed: onPressed,
+      );
+    }
+
+    return Material(
+      color: Theme.of(context).cardColor,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(a.rrMenuItemName(a.ctx, index).toDartString()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.currency_yen,
+                  size: 10,
+                ),
+                Text(a.rrMenuItemPrice(a.ctx, index).toString()),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void editMenuItemInModal(
+  BuildContext context,
+  ActiveAppState app, {
+  required void Function() onSubmit,
+  int? editIndex,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (context) => Padding(
+      padding: MediaQuery.of(context).viewInsets,
+      child: _NewMenuItemModal(
+        app,
+        onSubmit: onSubmit,
+        editIndex: editIndex,
+      ),
+    ),
+  );
+}
+
+class _MenuPageState extends State<MenuPage> {
+  @override
+  Widget build(BuildContext context) {
     final a = widget.app;
-    final itemCount = a.rrMenuLen(a.ctx);
 
     // This method is rerun every time setState is called, for instance as done
     // by the _addMenuItem method above.
@@ -247,51 +325,38 @@ class _MenuPageState extends State<MenuPage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('メニュー編集'),
+      ),
+
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have this many MENU ITEMS, man!!',
-            ),
-            Text(
-              '$itemCount',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const MenuItemCard(),
-          ],
+
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+          ),
+          itemCount: a.rrMenuLen(a.ctx),
+          itemBuilder: (BuildContext context, int index) {
+            return _MenuItem(a, index, onPressed: () {
+              editMenuItemInModal(
+                context,
+                a,
+                editIndex: index,
+                onSubmit: () => setState(() {}),
+              );
+            });
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => Padding(
-              padding: MediaQuery.of(context).viewInsets,
-              child: _NewMenuItemModal(
-                app: a,
-                onSubmit: () => setState(() {}),
-              ),
-            ),
-          );
+          editMenuItemInModal(context, a, onSubmit: () => setState(() {}));
         },
-        tooltip: 'Add new menu item',
+        tooltip: '商品の新規作成',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );

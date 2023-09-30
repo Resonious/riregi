@@ -42,6 +42,24 @@ typedef RRMenuAdd = int Function(
   Pointer<Utf8>,
   int,
 );
+typedef RRMenuUpdateNative = Int Function(
+  Pointer<Void>,
+  Uint32,
+  Int64,
+  Pointer<Utf8>,
+  Uint32,
+  Pointer<Utf8>,
+  Uint32,
+);
+typedef RRMenuUpdate = int Function(
+  Pointer<Void>,
+  int,
+  int,
+  Pointer<Utf8>,
+  int,
+  Pointer<Utf8>,
+  int,
+);
 
 // export fn rr_menu_item_name(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
 typedef RRMenuItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
@@ -59,7 +77,7 @@ typedef RRMenuItemImagePath = Pointer<Utf8> Function(
 
 // export fn rr_menu_item_price(app_state_ptr: *anyopaque, index: u32) i64 {
 typedef RRMenuItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
-typedef RRMenuItemPrice = Int64 Function(Pointer<Void>, int);
+typedef RRMenuItemPrice = int Function(Pointer<Void>, int);
 
 class ActiveAppState {
   final DynamicLibrary lib;
@@ -67,8 +85,11 @@ class ActiveAppState {
   late final RRStart rrStart;
   late final RRCleanup rrCleanup;
   late final RRMenuAdd rrMenuAdd;
+  late final RRMenuUpdate rrMenuUpdate;
   late final RRMenuLen rrMenuLen;
   late final RRMenuItemName rrMenuItemName;
+  late final RRMenuItemImagePath rrMenuItemImagePath;
+  late final RRMenuItemPrice rrMenuItemPrice;
 
   late final Pointer<Void> ctx;
 
@@ -76,9 +97,19 @@ class ActiveAppState {
     rrStart = lib.lookupFunction<RRStartNative, RRStart>("rr_start");
     rrCleanup = lib.lookupFunction<RRCleanupNative, RRCleanup>("rr_cleanup");
     rrMenuAdd = lib.lookupFunction<RRMenuAddNative, RRMenuAdd>("rr_menu_add");
+    rrMenuUpdate =
+        lib.lookupFunction<RRMenuUpdateNative, RRMenuUpdate>("rr_menu_update");
     rrMenuLen = lib.lookupFunction<RRMenuLenNative, RRMenuLen>("rr_menu_len");
     rrMenuItemName = lib.lookupFunction<RRMenuItemNameNative, RRMenuItemName>(
       "rr_menu_item_name",
+    );
+    rrMenuItemImagePath =
+        lib.lookupFunction<RRMenuItemImagePathNative, RRMenuItemImagePath>(
+      "rr_menu_item_image_path",
+    );
+    rrMenuItemPrice =
+        lib.lookupFunction<RRMenuItemPriceNative, RRMenuItemPrice>(
+      "rr_menu_item_price",
     );
 
     final path = dataPath.toNativeUtf8();
