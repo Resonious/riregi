@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 
 import 'data.dart';
+import 'menu.dart';
 
 void main() {
   runApp(const MyApp());
@@ -79,7 +80,7 @@ class _AppState extends State<MyApp> {
       ),
       home: app == null
           ? const Scaffold(body: Center(child: Text('loading')))
-          : MyHomePage(title: title, app: app!),
+          : Scaffold(body: MenuPage(title: title, app: app!)),
     );
   }
 }

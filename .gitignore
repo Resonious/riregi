@@ -45,3 +45,6 @@ app.*.map.json
 
 # Binaries from riregi-data
 /android/app/src/main/jnilibs/**/*.so
+
+# Test data
+.data/
