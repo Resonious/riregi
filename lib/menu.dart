@@ -113,6 +113,16 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
     );
   }
 
+  Widget _menuItemNameText(BuildContext context) {
+    return Text(
+      _menuItemName!,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.secondary,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -129,13 +139,7 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            _menuItemName!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          _menuItemNameText(context),
                           const Text('を編集'),
                         ],
                       ),
@@ -237,19 +241,61 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (isNew) _submitNew();
-                  Navigator.pop(context);
-                  if (isNew) widget.onSubmit();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    isNew ? '追加' : '閉じる',
-                    textScaleFactor: 1.4,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 24 * 2),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (isNew) _submitNew();
+                      Navigator.pop(context);
+                      if (isNew) widget.onSubmit();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        isNew ? '追加' : '閉じる',
+                      ),
+                    ),
                   ),
-                ),
+                  isNew
+                      ? const SizedBox(width: 24 * 2)
+                      : IconButton(
+                          iconSize: 24,
+                          icon: const Icon(Icons.delete, semanticLabel: '削除'),
+                          onPressed: () {
+                            showDialog<void>(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('商品の削除'),
+                                content: Wrap(
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    _menuItemNameText(context),
+                                    const Text('を削除してもよろしいですか？'),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('キャンセル'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      final a = widget.app;
+                                      a.rrMenuRemove(a.ctx, widget.editIndex!);
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      widget.onSubmit();
+                                    },
+                                    child: const Text('削除'),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ],
               ),
             ),
           ),

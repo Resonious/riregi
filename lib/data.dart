@@ -61,6 +61,9 @@ typedef RRMenuUpdate = int Function(
   int,
 );
 
+typedef RRMenuRemoveNative = Bool Function(Pointer<Void>, Uint32);
+typedef RRMenuRemove = bool Function(Pointer<Void>, int);
+
 // export fn rr_menu_item_name(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
 typedef RRMenuItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
 typedef RRMenuItemName = Pointer<Utf8> Function(Pointer<Void>, int);
@@ -99,6 +102,7 @@ class ActiveAppState {
   late final RRCleanup rrCleanup;
   late final RRMenuAdd rrMenuAdd;
   late final RRMenuUpdate rrMenuUpdate;
+  late final RRMenuRemove rrMenuRemove;
   late final RRMenuLen rrMenuLen;
   late final RRMenuItemName rrMenuItemName;
   late final RRMenuItemImagePath rrMenuItemImagePath;
@@ -115,6 +119,8 @@ class ActiveAppState {
     rrMenuAdd = lib.lookupFunction<RRMenuAddNative, RRMenuAdd>("rr_menu_add");
     rrMenuUpdate =
         lib.lookupFunction<RRMenuUpdateNative, RRMenuUpdate>("rr_menu_update");
+    rrMenuRemove =
+        lib.lookupFunction<RRMenuRemoveNative, RRMenuRemove>("rr_menu_remove");
     rrMenuLen = lib.lookupFunction<RRMenuLenNative, RRMenuLen>("rr_menu_len");
     rrMenuItemName = lib.lookupFunction<RRMenuItemNameNative, RRMenuItemName>(
       "rr_menu_item_name",
