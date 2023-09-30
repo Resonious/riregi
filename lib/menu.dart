@@ -453,19 +453,15 @@ class _MenuPageState extends State<MenuPage> {
         shape: CircularNotchedRectangle(),
         child: Row(
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.receipt_long),
-                Text('レジ'),
-              ],
+            _NavButton(
+              icon: Icons.receipt_long,
+              text: 'レジ',
+              selected: false,
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.edit_square),
-                Text('メニュー編集'),
-              ],
+            _NavButton(
+              icon: Icons.edit_square,
+              text: 'メニュー編集',
+              selected: true,
             ),
           ],
         ),
@@ -479,6 +475,51 @@ class _MenuPageState extends State<MenuPage> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  const _NavButton({
+    required this.icon,
+    required this.text,
+    this.onPressed,
+    this.selected = false,
+  });
+
+  final IconData icon;
+  final String text;
+  final bool selected;
+  final void Function()? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? Theme.of(context).colorScheme.primary : null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      child: SizedBox(
+        width: 80,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: selected ? 12 : 10,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
