@@ -162,6 +162,14 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                           setState(() {
                             selectedImage = null;
                           });
+
+                          if (!isNew) {
+                            final a = widget.app;
+                            final newPath = 'none'.toNativeUtf8();
+                            a.rrMenuItemSetImagePath(a.ctx, widget.editIndex!,
+                                newPath, newPath.length);
+                            widget.onSubmit();
+                          }
                         },
                         child: const Text('画像を削除'),
                       ),
