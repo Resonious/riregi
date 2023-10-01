@@ -9,25 +9,6 @@ import 'package:ffi/ffi.dart';
 
 import 'data.dart';
 
-class MenuPage extends StatefulWidget {
-  const MenuPage({super.key, required this.title, required this.app});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-  final ActiveAppState app;
-
-  @override
-  State<MenuPage> createState() => _MenuPageState();
-}
-
 class _NewMenuItemModal extends StatefulWidget {
   const _NewMenuItemModal(ActiveAppState a,
       {required this.onSubmit, this.editIndex})
@@ -411,115 +392,56 @@ void editMenuItemInModal(
   );
 }
 
+// TODO: this could be stateless, but we'd have to make it so
+// that each menu item is stateful and can rerender itself when
+// edited.. as of right now, we're doing pretty much a full rerender
+// every time an edit happens.
+class MenuPage extends StatefulWidget {
+  const MenuPage({super.key, required this.app});
+
+  final ActiveAppState app;
+
+  static Widget buildFloatingActionButton(
+    BuildContext context,
+    ActiveAppState app,
+    void Function() onUpdate,
+  ) {
+    return FloatingActionButton(
+      shape: const CircleBorder(),
+      onPressed: () {
+        editMenuItemInModal(context, app, onSubmit: onUpdate);
+      },
+      tooltip: '商品の新規作成',
+      child: const Icon(Icons.add),
+    );
+  }
+
+  @override
+  State<MenuPage> createState() => _MenuPageState();
+}
+
 class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     final a = widget.app;
 
-    // This method is rerun every time setState is called, for instance as done
-    // by the _addMenuItem method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('メニュー編集'),
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-          ),
-          itemCount: a.rrMenuLen(a.ctx),
-          itemBuilder: (BuildContext context, int index) {
-            return _MenuItem(a, index, onPressed: () {
-              editMenuItemInModal(
-                context,
-                a,
-                editIndex: index,
-                onSubmit: () => setState(() {}),
-              );
-            });
-          },
-        ),
-      ),
-      bottomNavigationBar: const BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        child: Row(
-          children: [
-            _NavButton(
-              icon: Icons.receipt_long,
-              text: 'レジ',
-              selected: false,
-            ),
-            _NavButton(
-              icon: Icons.edit_square,
-              text: 'メニュー編集',
-              selected: true,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        onPressed: () {
-          editMenuItemInModal(context, a, onSubmit: () => setState(() {}));
-        },
-        tooltip: '商品の新規作成',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-    );
-  }
-}
-
-class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.icon,
-    required this.text,
-    this.onPressed,
-    this.selected = false,
-  });
-
-  final IconData icon;
-  final String text;
-  final bool selected;
-  final void Function()? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = selected ? Theme.of(context).colorScheme.primary : null;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-      child: SizedBox(
-        width: 80,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: color),
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: selected ? 12 : 10,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      itemCount: a.rrMenuLen(a.ctx),
+      itemBuilder: (BuildContext context, int index) {
+        return _MenuItem(a, index, onPressed: () {
+          editMenuItemInModal(
+            context,
+            a,
+            editIndex: index,
+            onSubmit: () => setState(() {}),
+          );
+        });
+      },
     );
   }
 }

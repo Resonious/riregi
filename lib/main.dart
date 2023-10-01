@@ -3,13 +3,17 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ffi/ffi.dart';
 
 import 'data.dart';
 import 'menu.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+enum AppPage {
+  register,
+  menu,
 }
 
 class MyApp extends StatefulWidget {
@@ -60,143 +64,123 @@ class _AppState extends State<MyApp> {
     return MaterialApp(
       title: title,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: app == null
-          ? const Scaffold(body: Center(child: Text('loading')))
-          : Scaffold(body: MenuPage(title: title, app: app!)),
+          ? const Scaffold(body: Center(child: Text('読み込み中')))
+          : Scaffold(body: AppFrame(app: app!)),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.app});
+class AppFrame extends StatefulWidget {
+  const AppFrame({super.key, required this.app});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
   final ActiveAppState app;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<AppFrame> createState() => _AppFrameState();
 }
 
-class MenuItemCard extends StatelessWidget {
-  const MenuItemCard({
-    super.key,
-  });
+class _AppFrameState extends State<AppFrame> {
+  AppPage page = AppPage.register;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.app;
+
+    if (a.rrMenuLen(a.ctx) == 0) {
+      page = AppPage.menu;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(2.0),
-      child: Center(
+    return Scaffold(
+      appBar: AppBar(
+        title: switch (page) {
+          AppPage.register => const Text('レジ'),
+          AppPage.menu => const Text('メニュー編集'),
+        },
+      ),
+      body: switch (page) {
+        AppPage.register => const Center(child: Text('TODO!')),
+        AppPage.menu => MenuPage(app: widget.app),
+      },
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
         child: Row(
           children: [
-            Text('-1'),
-            Text('Tacos x1'),
-            Text('+1'),
+            _NavButton(
+              icon: Icons.receipt_long,
+              text: 'レジ',
+              selected: page == AppPage.register,
+              onPressed: () => setState(() => page = AppPage.register),
+            ),
+            _NavButton(
+              icon: Icons.edit_square,
+              text: 'メニュー編集',
+              selected: page == AppPage.menu,
+              onPressed: () => setState(() => page = AppPage.menu),
+            ),
           ],
         ),
       ),
+      floatingActionButton: switch (page) {
+        AppPage.register => null,
+        AppPage.menu =>
+          MenuPage.buildFloatingActionButton(context, widget.app, () {
+            setState(() {});
+          }),
+      },
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final nameController = TextEditingController();
+class _NavButton extends StatelessWidget {
+  const _NavButton({
+    required this.icon,
+    required this.text,
+    this.onPressed,
+    this.selected = false,
+  });
 
-  void _incrementCounter() {
-    setState(() {
-      final name = nameController.text.toNativeUtf8();
-
-      widget.app.rrMenuAdd(
-        widget.app.ctx,
-        999,
-        name,
-        name.length,
-        name,
-        name.length,
-      );
-    });
-  }
+  final IconData icon;
+  final String text;
+  final bool selected;
+  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final itemCount = widget.app.rrMenuLen(widget.app.ctx);
+    final color = selected ? Theme.of(context).colorScheme.primary : null;
 
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Name of new menu item',
-              ),
-              controller: nameController,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      child: SizedBox(
+        width: 80,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: selected ? 12 : 10,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
-            const Text(
-              'You have this many MENU ITEMS, man!!',
-            ),
-            Text(
-              '$itemCount',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const MenuItemCard(),
-          ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
