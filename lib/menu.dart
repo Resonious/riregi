@@ -287,11 +287,17 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
 }
 
 class _Image extends StatelessWidget {
-  const _Image({required this.image, this.onPressed, this.size = 150});
+  const _Image({
+    required this.image,
+    this.onPressed,
+    this.size = 150,
+    this.text,
+  });
 
   final double size;
   final ImageProvider image;
   final void Function()? onPressed;
+  final String? text;
 
   @override
   Widget build(BuildContext context) {
@@ -305,6 +311,30 @@ class _Image extends StatelessWidget {
           image: image,
           child: InkWell(
             onTap: onPressed,
+            child: text == null
+                ? null
+                : Center(
+                    child: Stack(
+                      children: [
+                        Text(
+                          text!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            foreground: Paint()
+                              ..style = PaintingStyle.stroke
+                              ..strokeWidth = 0.5
+                              ..color = Colors.black,
+                          ),
+                        ),
+                        Text(
+                          text!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
           ),
         ),
       ),
@@ -327,11 +357,11 @@ class _MenuItem extends StatelessWidget {
 
     return Tooltip(
       message: '$name ¥$price',
-      child: _content(context),
+      child: _content(context, price),
     );
   }
 
-  Widget _content(BuildContext context) {
+  Widget _content(BuildContext context, String price) {
     final imagePath = a.rrMenuItemImagePath(a.ctx, index).toDartString();
 
     if (imagePath.isNotEmpty && imagePath != 'none') {
@@ -339,6 +369,7 @@ class _MenuItem extends StatelessWidget {
         size: 80,
         image: FileImage(File(imagePath)),
         onPressed: onPressed,
+        text: '¥$price',
       );
     }
 
