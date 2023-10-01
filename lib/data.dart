@@ -3,148 +3,137 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 
-// export fn rr_start(dir_path_ptr: [*:0]const u8, dir_path_len: u32) ?*anyopaque {
+typedef RRGetErrorNative = Pointer<Utf8> Function();
+typedef RRGetError = Pointer<Utf8> Function();
 typedef RRStartNative = Pointer<Void> Function(Pointer<Utf8>, Uint32);
 typedef RRStart = Pointer<Void> Function(Pointer<Utf8>, int);
-// export fn rr_cleanup(app_state_ptr: *anyopaque) void {
 typedef RRCleanupNative = Void Function(Pointer<Void>);
 typedef RRCleanup = void Function(Pointer<Void>);
-
-// export fn rr_get_error() [*c]const u8 {
-typedef RRGetErrorNative = Pointer<Utf8> Function();
-typedef RRGetError = RRGetErrorNative;
-
-// export fn rr_menu_len(app_state_ptr: *anyopaque) u32 {
 typedef RRMenuLenNative = Uint32 Function(Pointer<Void>);
 typedef RRMenuLen = int Function(Pointer<Void>);
-
-// export fn rr_menu_add(
-//     app_state_ptr: *anyopaque,
-//     price: i64,
-//     name: [*c]const u8,
-//     name_len: u32,
-//     image_path: [*c]const u8,
-//     image_path_len: u32,
-// ) c_int {
 typedef RRMenuAddNative = Int Function(
-  Pointer<Void>,
-  Int64,
-  Pointer<Utf8>,
-  Uint32,
-  Pointer<Utf8>,
-  Uint32,
-);
+    Pointer<Void>, Int64, Pointer<Utf8>, Uint32, Pointer<Utf8>, Uint32);
 typedef RRMenuAdd = int Function(
-  Pointer<Void>,
-  int,
-  Pointer<Utf8>,
-  int,
-  Pointer<Utf8>,
-  int,
-);
+    Pointer<Void>, int, Pointer<Utf8>, int, Pointer<Utf8>, int);
 typedef RRMenuUpdateNative = Int Function(
-  Pointer<Void>,
-  Uint32,
-  Int64,
-  Pointer<Utf8>,
-  Uint32,
-  Pointer<Utf8>,
-  Uint32,
-);
+    Pointer<Void>, Uint32, Int64, Pointer<Utf8>, Uint32, Pointer<Utf8>, Uint32);
 typedef RRMenuUpdate = int Function(
-  Pointer<Void>,
-  int,
-  int,
-  Pointer<Utf8>,
-  int,
-  Pointer<Utf8>,
-  int,
-);
-
-typedef RRMenuRemoveNative = Bool Function(Pointer<Void>, Uint32);
-typedef RRMenuRemove = bool Function(Pointer<Void>, int);
-
-// export fn rr_menu_item_name(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
+    Pointer<Void>, int, int, Pointer<Utf8>, int, Pointer<Utf8>, int);
+typedef RRMenuRemoveNative = Int Function(Pointer<Void>, Uint32);
+typedef RRMenuRemove = int Function(Pointer<Void>, int);
 typedef RRMenuItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
 typedef RRMenuItemName = Pointer<Utf8> Function(Pointer<Void>, int);
-
-// export fn rr_menu_item_image_path(app_state_ptr: *anyopaque, index: u32) [*c]const u8 {
 typedef RRMenuItemImagePathNative = Pointer<Utf8> Function(
-  Pointer<Void>,
-  Uint32,
-);
-typedef RRMenuItemImagePath = Pointer<Utf8> Function(
-  Pointer<Void>,
-  int,
-);
-
-// export fn rr_menu_item_price(app_state_ptr: *anyopaque, index: u32) i64 {
+    Pointer<Void>, Uint32);
+typedef RRMenuItemImagePath = Pointer<Utf8> Function(Pointer<Void>, int);
 typedef RRMenuItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
 typedef RRMenuItemPrice = int Function(Pointer<Void>, int);
-
-typedef RRMenuItemSetNameNative = Bool Function(
+typedef RRMenuItemSetNameNative = Int Function(
     Pointer<Void>, Uint32, Pointer<Utf8>, Uint32);
-typedef RRMenuItemSetName = bool Function(
+typedef RRMenuItemSetName = int Function(
     Pointer<Void>, int, Pointer<Utf8>, int);
-
-typedef RRMenuItemSetImagePathNative = Bool Function(
+typedef RRMenuItemSetImagePathNative = Int Function(
     Pointer<Void>, Uint32, Pointer<Utf8>, Uint32);
-typedef RRMenuItemSetImagePath = bool Function(
+typedef RRMenuItemSetImagePath = int Function(
     Pointer<Void>, int, Pointer<Utf8>, int);
-
-typedef RRMenuItemSetPriceNative = Bool Function(Pointer<Void>, Uint32, Int64);
-typedef RRMenuItemSetPrice = bool Function(Pointer<Void>, int, int);
+typedef RRMenuItemSetPriceNative = Int Function(Pointer<Void>, Uint32, Int64);
+typedef RRMenuItemSetPrice = int Function(Pointer<Void>, int, int);
+typedef RROrdersLenNative = Uint64 Function(Pointer<Void>);
+typedef RROrdersLen = int Function(Pointer<Void>);
+typedef RRCurrentOrderLenNative = Uint32 Function(Pointer<Void>);
+typedef RRCurrentOrderLen = int Function(Pointer<Void>);
+typedef RRCurrentOrderTotalNative = Int64 Function(Pointer<Void>);
+typedef RRCurrentOrderTotal = int Function(Pointer<Void>);
+typedef RRAddItemToOrderNative = Int Function(Pointer<Void>, Uint32);
+typedef RRAddItemToOrder = int Function(Pointer<Void>, int);
+typedef RRRemoveOrderItemNative = Int Function(Pointer<Void>, Uint32);
+typedef RRRemoveOrderItem = int Function(Pointer<Void>, int);
+typedef RROrderItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
+typedef RROrderItemName = Pointer<Utf8> Function(Pointer<Void>, int);
+typedef RROrderItemImagePathNative = Pointer<Utf8> Function(
+    Pointer<Void>, Uint32);
+typedef RROrderItemImagePath = Pointer<Utf8> Function(Pointer<Void>, int);
+typedef RROrderItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
+typedef RROrderItemPrice = int Function(Pointer<Void>, int);
 
 class ActiveAppState {
   final DynamicLibrary lib;
   final String dataPath;
+
+  late final RRGetError rrGetError;
   late final RRStart rrStart;
   late final RRCleanup rrCleanup;
+  late final RRMenuLen rrMenuLen;
   late final RRMenuAdd rrMenuAdd;
   late final RRMenuUpdate rrMenuUpdate;
   late final RRMenuRemove rrMenuRemove;
-  late final RRMenuLen rrMenuLen;
   late final RRMenuItemName rrMenuItemName;
   late final RRMenuItemImagePath rrMenuItemImagePath;
   late final RRMenuItemPrice rrMenuItemPrice;
   late final RRMenuItemSetName rrMenuItemSetName;
   late final RRMenuItemSetImagePath rrMenuItemSetImagePath;
   late final RRMenuItemSetPrice rrMenuItemSetPrice;
+  late final RROrdersLen rrOrdersLen;
+  late final RRCurrentOrderLen rrCurrentOrderLen;
+  late final RRCurrentOrderTotal rrCurrentOrderTotal;
+  late final RRAddItemToOrder rrAddItemToOrder;
+  late final RRRemoveOrderItem rrRemoveOrderItem;
+  late final RROrderItemName rrOrderItemName;
+  late final RROrderItemImagePath rrOrderItemImagePath;
+  late final RROrderItemPrice rrOrderItemPrice;
 
   late final Pointer<Void> ctx;
 
   ActiveAppState({required this.lib, required this.dataPath}) {
+    rrGetError =
+        lib.lookupFunction<RRGetErrorNative, RRGetError>("rr_get_error");
     rrStart = lib.lookupFunction<RRStartNative, RRStart>("rr_start");
     rrCleanup = lib.lookupFunction<RRCleanupNative, RRCleanup>("rr_cleanup");
+    rrMenuLen = lib.lookupFunction<RRMenuLenNative, RRMenuLen>("rr_menu_len");
     rrMenuAdd = lib.lookupFunction<RRMenuAddNative, RRMenuAdd>("rr_menu_add");
     rrMenuUpdate =
         lib.lookupFunction<RRMenuUpdateNative, RRMenuUpdate>("rr_menu_update");
     rrMenuRemove =
         lib.lookupFunction<RRMenuRemoveNative, RRMenuRemove>("rr_menu_remove");
-    rrMenuLen = lib.lookupFunction<RRMenuLenNative, RRMenuLen>("rr_menu_len");
     rrMenuItemName = lib.lookupFunction<RRMenuItemNameNative, RRMenuItemName>(
-      "rr_menu_item_name",
-    );
+        "rr_menu_item_name");
     rrMenuItemImagePath =
         lib.lookupFunction<RRMenuItemImagePathNative, RRMenuItemImagePath>(
-      "rr_menu_item_image_path",
-    );
+            "rr_menu_item_image_path");
     rrMenuItemPrice =
         lib.lookupFunction<RRMenuItemPriceNative, RRMenuItemPrice>(
-      "rr_menu_item_price",
-    );
+            "rr_menu_item_price");
     rrMenuItemSetName =
         lib.lookupFunction<RRMenuItemSetNameNative, RRMenuItemSetName>(
-      "rr_menu_item_set_name",
-    );
-    rrMenuItemSetImagePath = lib
-        .lookupFunction<RRMenuItemSetImagePathNative, RRMenuItemSetImagePath>(
-      "rr_menu_item_set_image_path",
-    );
+            "rr_menu_item_set_name");
+    rrMenuItemSetImagePath = lib.lookupFunction<RRMenuItemSetImagePathNative,
+        RRMenuItemSetImagePath>("rr_menu_item_set_image_path");
     rrMenuItemSetPrice =
         lib.lookupFunction<RRMenuItemSetPriceNative, RRMenuItemSetPrice>(
-      "rr_menu_item_set_price",
-    );
+            "rr_menu_item_set_price");
+    rrOrdersLen =
+        lib.lookupFunction<RROrdersLenNative, RROrdersLen>("rr_orders_len");
+    rrCurrentOrderLen =
+        lib.lookupFunction<RRCurrentOrderLenNative, RRCurrentOrderLen>(
+            "rr_current_order_len");
+    rrCurrentOrderTotal =
+        lib.lookupFunction<RRCurrentOrderTotalNative, RRCurrentOrderTotal>(
+            "rr_current_order_total");
+    rrAddItemToOrder =
+        lib.lookupFunction<RRAddItemToOrderNative, RRAddItemToOrder>(
+            "rr_add_item_to_order");
+    rrRemoveOrderItem =
+        lib.lookupFunction<RRRemoveOrderItemNative, RRRemoveOrderItem>(
+            "rr_remove_order_item");
+    rrOrderItemName =
+        lib.lookupFunction<RROrderItemNameNative, RROrderItemName>(
+            "rr_order_item_name");
+    rrOrderItemImagePath =
+        lib.lookupFunction<RROrderItemImagePathNative, RROrderItemImagePath>(
+            "rr_order_item_image_path");
+    rrOrderItemPrice =
+        lib.lookupFunction<RROrderItemPriceNative, RROrderItemPrice>(
+            "rr_order_item_price");
 
     final path = dataPath.toNativeUtf8();
     ctx = rrStart(path, path.length);
