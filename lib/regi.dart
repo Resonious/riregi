@@ -5,10 +5,196 @@ import 'package:ffi/ffi.dart';
 import 'data.dart';
 import 'menu.dart';
 
+List<Map<int, int>> _makeChange(int total, int paid) {
+  if (total > paid) {
+    throw ArgumentError(
+        "Paid amount should be greater than or equal to total price.");
+  }
+
+  int change = paid - total;
+  List<int> denominations = [10000, 5000, 1000, 500, 100, 50, 10, 5, 1];
+  List<Map<int, int>> result = [];
+
+  for (int denom in denominations) {
+    // integer division to get count of current denomination
+    int count = change ~/ denom;
+    if (count > 0) {
+      result.add({denom: count});
+      change -= denom * count;
+    }
+  }
+
+  return result;
+}
+
+class _OrderFinishModal extends StatefulWidget {
+  const _OrderFinishModal(this.app);
+
+  final ActiveAppState app;
+
+  @override
+  State<_OrderFinishModal> createState() => _OrderFinishModalState();
+}
+
+class _OrderFinishModalState extends State<_OrderFinishModal> {
+  List<Map<int, int>> change = [];
+
+  @override
+  void initState() {}
+
+  @override
+  Widget build(BuildContext context) {
+    const labelWidth = 100.0;
+    final a = widget.app;
+    final total = a.rrCurrentOrderTotal(a.ctx);
+
+    return Form(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            height: 30,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text('お会計'),
+              ),
+            ),
+          ),
+          const Divider(thickness: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: labelWidth,
+                  child: Text(
+                    '合計',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.currency_yen,
+                        size: 20,
+                      ),
+                      Text(
+                        a.rrCurrentOrderTotal(a.ctx).toString(),
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: labelWidth,
+                  child: Text('客さんから',
+                      style: Theme.of(context).textTheme.titleMedium),
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        child: Icon(
+                          Icons.currency_yen,
+                          size: 20.0,
+                          semanticLabel: 'JPY',
+                        ),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          keyboardType: const TextInputType.numberWithOptions(
+                            signed: false,
+                            decimal: false,
+                          ),
+                          onChanged: (value) {
+                            final paid = int.tryParse(value) ?? 0;
+                            if (paid < total) {
+                              setState(() {
+                                change = [];
+                              });
+                              return;
+                            }
+
+                            setState(() {
+                              change = _makeChange(total, paid);
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: '支払い金額',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: SizedBox(
+              height: 250,
+              child: ListView(
+                children: change
+                    .map(
+                      (e) => Row(
+                        children: [
+                          Text(e.keys.first.toString()),
+                          const Text('円: ×'),
+                          Text(e.values.first.toString()),
+                        ],
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class RegiPage extends StatefulWidget {
   const RegiPage({super.key, required this.app});
 
   final ActiveAppState app;
+
+  static Widget buildFloatingActionButton(
+    BuildContext context,
+    ActiveAppState app,
+    void Function() onUpdate,
+  ) {
+    return FloatingActionButton(
+      shape: const CircleBorder(),
+      onPressed: () {
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) => Padding(
+            padding: MediaQuery.of(context).viewInsets,
+            child: _OrderFinishModal(app),
+          ),
+        );
+      },
+      tooltip: 'お会計を開始する',
+      child: const Icon(Icons.payments),
+    );
+  }
 
   @override
   State<RegiPage> createState() => _RegiPageState();
@@ -26,7 +212,8 @@ class _RegiPageState extends State<RegiPage> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
+        SizedBox(
+          height: 250,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -131,65 +318,67 @@ class _RegiPageState extends State<RegiPage> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-          child: Container(
-            height: 300,
-            decoration: BoxDecoration(
-              border: Border.all(width: 1.0, color: Colors.grey),
-            ),
+        Expanded(
+            flex: 1,
             child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  const SizedBox(height: 30, child: Text('メニュー')),
-                  Expanded(
-                      child: menuItemsCount == 0
-                          ? const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'メニューが空っぽです。',
-                                    style: TextStyle(color: Colors.grey),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1.0, color: Colors.grey),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30, child: Text('メニュー')),
+                      Expanded(
+                          child: menuItemsCount == 0
+                              ? const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'メニューが空っぽです。',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                      Text(
+                                        '商品を追加してください。',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    '商品を追加してください。',
-                                    style: TextStyle(color: Colors.grey),
+                                )
+                              : GridView.builder(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 4,
+                                    mainAxisSpacing: 10,
+                                    crossAxisSpacing: 10,
                                   ),
-                                ],
-                              ),
-                            )
-                          : GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
-                                mainAxisSpacing: 10,
-                                crossAxisSpacing: 10,
-                              ),
-                              itemCount: menuItemsCount,
-                              itemBuilder: (BuildContext context, int index) {
-                                return MenuItem(
-                                  name: a
-                                      .rrMenuItemName(a.ctx, index)
-                                      .toDartString(),
-                                  price: a.rrMenuItemPrice(a.ctx, index),
-                                  imagePath: a
-                                      .rrMenuItemImagePath(a.ctx, index)
-                                      .toDartString(),
-                                  onPressed: () {
-                                    setState(() {
-                                      a.rrAddItemToOrder(a.ctx, index);
-                                    });
+                                  itemCount: menuItemsCount,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return MenuItem(
+                                      name: a
+                                          .rrMenuItemName(a.ctx, index)
+                                          .toDartString(),
+                                      price: a.rrMenuItemPrice(a.ctx, index),
+                                      imagePath: a
+                                          .rrMenuItemImagePath(a.ctx, index)
+                                          .toDartString(),
+                                      onPressed: () {
+                                        setState(() {
+                                          a.rrAddItemToOrder(a.ctx, index);
+                                        });
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                            )),
-                ],
+                                )),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
+            )),
       ],
     );
   }

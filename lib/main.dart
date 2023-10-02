@@ -130,7 +130,10 @@ class _AppFrameState extends State<AppFrame> {
         ),
       ),
       floatingActionButton: switch (page) {
-        AppPage.register => null,
+        AppPage.register =>
+          RegiPage.buildFloatingActionButton(context, widget.app, () {
+            setState(() {});
+          }),
         AppPage.menu =>
           MenuPage.buildFloatingActionButton(context, widget.app, () {
             setState(() {});
