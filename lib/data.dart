@@ -55,6 +55,8 @@ typedef RROrderItemImagePathNative = Pointer<Utf8> Function(
 typedef RROrderItemImagePath = Pointer<Utf8> Function(Pointer<Void>, int);
 typedef RROrderItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
 typedef RROrderItemPrice = int Function(Pointer<Void>, int);
+typedef RRCompleteOrderNative = Int Function(Pointer<Void>);
+typedef RRCompleteOrder = int Function(Pointer<Void>);
 
 class ActiveAppState {
   final DynamicLibrary lib;
@@ -81,6 +83,7 @@ class ActiveAppState {
   late final RROrderItemName rrOrderItemName;
   late final RROrderItemImagePath rrOrderItemImagePath;
   late final RROrderItemPrice rrOrderItemPrice;
+  late final RRCompleteOrder rrCompleteOrder;
 
   late final Pointer<Void> ctx;
 
@@ -134,6 +137,9 @@ class ActiveAppState {
     rrOrderItemPrice =
         lib.lookupFunction<RROrderItemPriceNative, RROrderItemPrice>(
             "rr_order_item_price");
+    rrCompleteOrder =
+        lib.lookupFunction<RRCompleteOrderNative, RRCompleteOrder>(
+            "rr_complete_order");
 
     final path = dataPath.toNativeUtf8();
     ctx = rrStart(path, path.length);

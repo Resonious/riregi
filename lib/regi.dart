@@ -28,9 +28,10 @@ List<Map<int, int>> _makeChange(int total, int paid) {
 }
 
 class _OrderFinishModal extends StatefulWidget {
-  const _OrderFinishModal(this.app);
+  const _OrderFinishModal(this.app, {required this.onSubmit});
 
   final ActiveAppState app;
+  final void Function() onSubmit;
 
   @override
   State<_OrderFinishModal> createState() => _OrderFinishModalState();
@@ -40,7 +41,9 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
   List<Map<int, int>> change = [];
 
   @override
-  void initState() {}
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +150,7 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: SizedBox(
-              height: 250,
+              height: 165,
               child: ListView(
                 children: change
                     .map(
@@ -160,6 +163,22 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
                       ),
                     )
                     .toList(growable: false),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: ElevatedButton(
+              onPressed: () {
+                a.rrCompleteOrder(a.ctx);
+                Navigator.pop(context);
+                widget.onSubmit();
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(5),
+                child: Text(
+                  '完了',
+                ),
               ),
             ),
           ),
@@ -187,7 +206,7 @@ class RegiPage extends StatefulWidget {
           isScrollControlled: true,
           builder: (context) => Padding(
             padding: MediaQuery.of(context).viewInsets,
-            child: _OrderFinishModal(app),
+            child: _OrderFinishModal(app, onSubmit: onUpdate),
           ),
         );
       },
