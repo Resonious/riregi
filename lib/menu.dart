@@ -342,7 +342,7 @@ class _Image extends StatelessWidget {
   }
 }
 
-class MenuItem extends StatelessWidget {
+class MenuItem extends StatefulWidget {
   const MenuItem({
     super.key,
     required this.name,
@@ -358,19 +358,66 @@ class MenuItem extends StatelessWidget {
   final void Function()? onPressed;
 
   @override
+  State<MenuItem> createState() => _MenuItemState();
+}
+
+class _MenuItemState extends State<MenuItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation<double> animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+
+    animation = Tween<double>(begin: 0, end: 1).animate(controller)
+      ..addListener(
+        () {
+          setState(
+            () {},
+          );
+        },
+      );
+
+    controller.forward();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final name = widget.name;
+    final price = widget.price;
+
     return Tooltip(
       message: '$name ¥$price',
-      child: _content(context, price.toString()),
+      child: Container(
+        transform: Transform.scale(scale: animation.value).transform,
+        child: _content(context, name, price.toString(), widget.imagePath),
+      ),
     );
   }
 
-  Widget _content(BuildContext context, String price) {
+  Widget _content(
+    BuildContext context,
+    String name,
+    String price,
+    String imagePath,
+  ) {
     if (imagePath.isNotEmpty && imagePath != 'none') {
       return _Image(
         size: 80,
         image: FileImage(File(imagePath)),
-        onPressed: onPressed,
+        onPressed: widget.onPressed,
         text: '¥$price',
       );
     }
@@ -380,7 +427,7 @@ class MenuItem extends StatelessWidget {
       child: Material(
         color: Theme.of(context).colorScheme.secondaryContainer,
         child: InkWell(
-          onTap: onPressed,
+          onTap: widget.onPressed,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
