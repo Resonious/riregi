@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'data.dart';
 import 'menu.dart';
+import 'regi.dart';
 
 void main() {
   runApp(const MyApp());
@@ -106,7 +107,7 @@ class _AppFrameState extends State<AppFrame> {
         },
       ),
       body: switch (page) {
-        AppPage.register => const Center(child: Text('TODO!')),
+        AppPage.register => RegiPage(app: widget.app),
         AppPage.menu => MenuPage(app: widget.app),
       },
       bottomNavigationBar: BottomAppBar(

@@ -342,28 +342,30 @@ class _Image extends StatelessWidget {
   }
 }
 
-class _MenuItem extends StatelessWidget {
-  const _MenuItem(ActiveAppState app, this.index, {this.onPressed}) : a = app;
+class MenuItem extends StatelessWidget {
+  const MenuItem({
+    super.key,
+    required this.name,
+    required this.price,
+    required this.imagePath,
+    this.onPressed,
+  });
 
-  final ActiveAppState a;
-  final int index;
+  final String name;
+  final int price;
+  final String imagePath;
 
   final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final name = a.rrMenuItemName(a.ctx, index).toDartString();
-    final price = a.rrMenuItemPrice(a.ctx, index).toString();
-
     return Tooltip(
       message: '$name ¥$price',
-      child: _content(context, price),
+      child: _content(context, price.toString()),
     );
   }
 
   Widget _content(BuildContext context, String price) {
-    final imagePath = a.rrMenuItemImagePath(a.ctx, index).toDartString();
-
     if (imagePath.isNotEmpty && imagePath != 'none') {
       return _Image(
         size: 80,
@@ -383,7 +385,7 @@ class _MenuItem extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(a.rrMenuItemName(a.ctx, index).toDartString()),
+                Text(name),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -391,7 +393,7 @@ class _MenuItem extends StatelessWidget {
                       Icons.currency_yen,
                       size: 10,
                     ),
-                    Text(a.rrMenuItemPrice(a.ctx, index).toString()),
+                    Text(price),
                   ],
                 )
               ],
@@ -464,14 +466,19 @@ class _MenuPageState extends State<MenuPage> {
       ),
       itemCount: a.rrMenuLen(a.ctx),
       itemBuilder: (BuildContext context, int index) {
-        return _MenuItem(a, index, onPressed: () {
-          editMenuItemInModal(
-            context,
-            a,
-            editIndex: index,
-            onSubmit: () => setState(() {}),
-          );
-        });
+        return MenuItem(
+          name: a.rrMenuItemName(a.ctx, index).toDartString(),
+          price: a.rrMenuItemPrice(a.ctx, index),
+          imagePath: a.rrMenuItemImagePath(a.ctx, index).toDartString(),
+          onPressed: () {
+            editMenuItemInModal(
+              context,
+              a,
+              editIndex: index,
+              onSubmit: () => setState(() {}),
+            );
+          },
+        );
       },
     );
   }
