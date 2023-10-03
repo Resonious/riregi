@@ -472,7 +472,7 @@ class _MenuItemState extends State<MenuItem>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(name),
+                Text(name, style: Theme.of(context).textTheme.bodySmall),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
