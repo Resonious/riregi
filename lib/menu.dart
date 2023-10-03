@@ -305,7 +305,7 @@ class _Image extends StatelessWidget {
       borderRadius: BorderRadius.circular(size * 0.2),
       child: Material(
         child: Ink.image(
-          fit: BoxFit.fill,
+          fit: BoxFit.fitWidth,
           width: size,
           height: size,
           image: image,
