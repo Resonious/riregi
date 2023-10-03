@@ -1,21 +1,32 @@
-import 'dart:developer';
+import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:math';
+import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
 import 'package:ffi/ffi.dart';
 
 import 'data.dart';
 
+String getRandString(int len) {
+  var random = Random.secure();
+  var values = List<int>.generate(len, (i) => random.nextInt(255));
+  return base64UrlEncode(values);
+}
+
 class _NewMenuItemModal extends StatefulWidget {
   const _NewMenuItemModal(ActiveAppState a,
-      {required this.onSubmit, this.editIndex})
+      {required this.onSubmit, required this.dataPath, this.editIndex})
       : app = a;
 
   final void Function() onSubmit;
   final ActiveAppState app;
+  final String dataPath;
   final int? editIndex;
 
   @override
@@ -35,7 +46,7 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
     );
 
     if (picked == null) {
-      log("picked nothing");
+      dev.log("picked nothing");
     } else {
       setState(() {
         selectedImage = File(picked.path);
@@ -43,7 +54,7 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
 
       if (!isNew && await selectedImage!.exists()) {
         final a = widget.app;
-        final newPath = picked.path.toNativeUtf8();
+        final newPath = await processedImagePath();
         a.rrMenuItemSetImagePath(
             a.ctx, widget.editIndex!, newPath, newPath.length);
         widget.onSubmit();
@@ -51,11 +62,35 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
     }
   }
 
-  _submitNew() {
+  Future<Pointer<Utf8>> processedImagePath() async {
+    if (selectedImage == null) return 'none'.toNativeUtf8();
+    final dataPath = widget.dataPath;
+
+    final fileName = getRandString(12);
+    final fullPath = '$dataPath/$fileName.png';
+
+    final imageProcess = img.Command()
+      ..decodeImageFile(selectedImage!.path)
+      ..copyResize(width: 300)
+      ..writeToFile(fullPath);
+
+    try {
+      await imageProcess.executeThread();
+    } on img.ImageException {
+      dev.log("failed to process.. copying instead");
+      await selectedImage!.copy(fullPath);
+    }
+
+    dev.log("wrote to $fullPath");
+
+    return fullPath.toNativeUtf8();
+  }
+
+  _submitNew() async {
     final a = widget.app;
     final name = nameController.text.toNativeUtf8();
     final price = int.tryParse(priceController.text) ?? 0;
-    final imagePath = (selectedImage?.path ?? 'none').toNativeUtf8();
+    final imagePath = await processedImagePath();
 
     a.rrMenuAdd(
       a.ctx,
@@ -82,7 +117,10 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
     nameController.text = _menuItemName!;
     priceController.text = a.rrMenuItemPrice(a.ctx, i).toString();
 
-    selectedImage = File(a.rrMenuItemImagePath(a.ctx, i).toDartString());
+    final imagePath = a.rrMenuItemImagePath(a.ctx, i).toDartString();
+    if (imagePath.isEmpty || imagePath == 'none') return;
+
+    selectedImage = File(imagePath);
     selectedImage!.exists().then(
       (exists) {
         if (!exists) {
@@ -227,10 +265,12 @@ class _NewMenuItemModalState extends State<_NewMenuItemModal> {
                 children: [
                   const SizedBox(width: 24 * 2),
                   ElevatedButton(
-                    onPressed: () {
-                      if (isNew) _submitNew();
+                    onPressed: () async {
                       Navigator.pop(context);
-                      if (isNew) widget.onSubmit();
+                      if (isNew) {
+                        await _submitNew();
+                        widget.onSubmit();
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(5),
@@ -456,6 +496,7 @@ void editMenuItemInModal(
   BuildContext context,
   ActiveAppState app, {
   required void Function() onSubmit,
+  required String dataPath,
   int? editIndex,
 }) {
   showModalBottomSheet<void>(
@@ -467,6 +508,7 @@ void editMenuItemInModal(
         app,
         onSubmit: onSubmit,
         editIndex: editIndex,
+        dataPath: dataPath,
       ),
     ),
   );
@@ -477,19 +519,26 @@ void editMenuItemInModal(
 // edited.. as of right now, we're doing pretty much a full rerender
 // every time an edit happens.
 class MenuPage extends StatefulWidget {
-  const MenuPage({super.key, required this.app});
+  const MenuPage({super.key, required this.app, required this.dataPath});
 
   final ActiveAppState app;
+  final String dataPath;
 
   static Widget buildFloatingActionButton(
     BuildContext context,
     ActiveAppState app,
-    void Function() onUpdate,
-  ) {
+    void Function() onUpdate, {
+    required String dataPath,
+  }) {
     return FloatingActionButton(
       shape: const CircleBorder(),
       onPressed: () {
-        editMenuItemInModal(context, app, onSubmit: onUpdate);
+        editMenuItemInModal(
+          context,
+          app,
+          onSubmit: onUpdate,
+          dataPath: dataPath,
+        );
       },
       tooltip: '商品の新規作成',
       child: const Icon(Icons.add),
@@ -522,6 +571,7 @@ class _MenuPageState extends State<MenuPage> {
               context,
               a,
               editIndex: index,
+              dataPath: widget.dataPath,
               onSubmit: () => setState(() {}),
             );
           },

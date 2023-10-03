@@ -28,6 +28,7 @@ class MyApp extends StatefulWidget {
 
 class _AppState extends State<MyApp> {
   ActiveAppState? app;
+  String? dataPath;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _AppState extends State<MyApp> {
           lib: DynamicLibrary.open(libPath),
           dataPath: dataPath,
         );
+        this.dataPath = dataPath;
       });
     });
   }
@@ -72,15 +74,16 @@ class _AppState extends State<MyApp> {
       ),
       home: app == null
           ? const Scaffold(body: Center(child: Text('読み込み中')))
-          : Scaffold(body: AppFrame(app: app!)),
+          : Scaffold(body: AppFrame(app: app!, dataPath: dataPath!)),
     );
   }
 }
 
 class AppFrame extends StatefulWidget {
-  const AppFrame({super.key, required this.app});
+  const AppFrame({super.key, required this.app, required this.dataPath});
 
   final ActiveAppState app;
+  final String dataPath;
 
   @override
   State<AppFrame> createState() => _AppFrameState();
@@ -111,7 +114,7 @@ class _AppFrameState extends State<AppFrame> {
       ),
       body: switch (page) {
         AppPage.register => RegiPage(app: widget.app),
-        AppPage.menu => MenuPage(app: widget.app),
+        AppPage.menu => MenuPage(app: widget.app, dataPath: widget.dataPath),
         AppPage.orders => OrdersPage(app: widget.app),
       },
       bottomNavigationBar: BottomAppBar(
@@ -147,7 +150,7 @@ class _AppFrameState extends State<AppFrame> {
         AppPage.menu =>
           MenuPage.buildFloatingActionButton(context, widget.app, () {
             setState(() {});
-          }),
+          }, dataPath: widget.dataPath),
         AppPage.orders => null,
       },
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
