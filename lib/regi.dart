@@ -102,7 +102,7 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
               children: [
                 SizedBox(
                   width: labelWidth,
-                  child: Text('客さんから',
+                  child: Text('お預り金',
                       style: Theme.of(context).textTheme.titleMedium),
                 ),
                 Expanded(
@@ -137,7 +137,6 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
                           },
                           decoration: const InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: '支払い金額',
                           ),
                         ),
                       ),
