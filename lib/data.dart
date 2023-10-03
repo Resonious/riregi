@@ -44,6 +44,10 @@ typedef RRCurrentOrderLenNative = Uint32 Function(Pointer<Void>);
 typedef RRCurrentOrderLen = int Function(Pointer<Void>);
 typedef RRCurrentOrderTotalNative = Int64 Function(Pointer<Void>);
 typedef RRCurrentOrderTotal = int Function(Pointer<Void>);
+typedef RROrderTotalNative = Int64 Function(Pointer<Void>, Uint64);
+typedef RROrderTotal = int Function(Pointer<Void>, int);
+typedef RROrderTimestampNative = Int64 Function(Pointer<Void>, Uint64);
+typedef RROrderTimestamp = int Function(Pointer<Void>, int);
 typedef RRAddItemToOrderNative = Int Function(Pointer<Void>, Uint32);
 typedef RRAddItemToOrder = int Function(Pointer<Void>, int);
 typedef RRRemoveOrderItemNative = Int Function(Pointer<Void>, Uint32);
@@ -78,6 +82,8 @@ class ActiveAppState {
   late final RROrdersLen rrOrdersLen;
   late final RRCurrentOrderLen rrCurrentOrderLen;
   late final RRCurrentOrderTotal rrCurrentOrderTotal;
+  late final RROrderTotal rrOrderTotal;
+  late final RROrderTimestamp rrOrderTimestamp;
   late final RRAddItemToOrder rrAddItemToOrder;
   late final RRRemoveOrderItem rrRemoveOrderItem;
   late final RROrderItemName rrOrderItemName;
@@ -122,6 +128,11 @@ class ActiveAppState {
     rrCurrentOrderTotal =
         lib.lookupFunction<RRCurrentOrderTotalNative, RRCurrentOrderTotal>(
             "rr_current_order_total");
+    rrOrderTotal =
+        lib.lookupFunction<RROrderTotalNative, RROrderTotal>("rr_order_total");
+    rrOrderTimestamp =
+        lib.lookupFunction<RROrderTimestampNative, RROrderTimestamp>(
+            "rr_order_timestamp");
     rrAddItemToOrder =
         lib.lookupFunction<RRAddItemToOrderNative, RRAddItemToOrder>(
             "rr_add_item_to_order");

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'data.dart';
 import 'menu.dart';
 import 'regi.dart';
+import 'orders.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,6 +16,7 @@ void main() {
 enum AppPage {
   register,
   menu,
+  orders,
 }
 
 class MyApp extends StatefulWidget {
@@ -104,11 +106,13 @@ class _AppFrameState extends State<AppFrame> {
         title: switch (page) {
           AppPage.register => const Text('レジ'),
           AppPage.menu => const Text('メニュー編集'),
+          AppPage.orders => const Text('注文履歴'),
         },
       ),
       body: switch (page) {
         AppPage.register => RegiPage(app: widget.app),
         AppPage.menu => MenuPage(app: widget.app),
+        AppPage.orders => OrdersPage(app: widget.app),
       },
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -126,6 +130,12 @@ class _AppFrameState extends State<AppFrame> {
               selected: page == AppPage.menu,
               onPressed: () => setState(() => page = AppPage.menu),
             ),
+            _NavButton(
+              icon: Icons.edit_square,
+              text: '履歴',
+              selected: page == AppPage.orders,
+              onPressed: () => setState(() => page = AppPage.orders),
+            ),
           ],
         ),
       ),
@@ -138,6 +148,7 @@ class _AppFrameState extends State<AppFrame> {
           MenuPage.buildFloatingActionButton(context, widget.app, () {
             setState(() {});
           }),
+        AppPage.orders => null,
       },
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
