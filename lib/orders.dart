@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data.dart';
+import 'regi.dart';
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key, required this.app});
@@ -55,17 +56,24 @@ class OrdersPage extends StatelessWidget {
                       formatTimestamp(
                           a.rrOrderTimestamp(a.ctx, ordersLen - 2 - i)),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.currency_yen,
-                          size: 10,
-                        ),
-                        Text(a
-                            .rrOrderTotal(a.ctx, ordersLen - 2 - i)
-                            .toString()),
-                      ],
+                    Text(
+                      paymentMethodJA(PaymentMethod.values[
+                          a.rrOrderPaymentMethod(a.ctx, ordersLen - 2 - i)]),
+                    ),
+                    SizedBox(
+                      width: 80,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(
+                            Icons.currency_yen,
+                            size: 10,
+                          ),
+                          Text(a
+                              .rrOrderTotal(a.ctx, ordersLen - 2 - i)
+                              .toString()),
+                        ],
+                      ),
                     ),
                   ],
                 ),

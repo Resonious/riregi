@@ -5,6 +5,20 @@ import 'package:ffi/ffi.dart';
 import 'data.dart';
 import 'menu.dart';
 
+enum PaymentMethod {
+  cash,
+  dbarai,
+  merpay,
+}
+
+String paymentMethodJA(PaymentMethod pm) {
+  return switch (pm) {
+    PaymentMethod.cash => "現金",
+    PaymentMethod.dbarai => "ｄ払い",
+    PaymentMethod.merpay => "メルペイ",
+  };
+}
+
 List<Map<int, int>> _makeChange(int total, int paid) {
   if (total > paid) {
     throw ArgumentError(
@@ -148,21 +162,81 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            child: SizedBox(
-              height: 165,
-              child: ListView(
-                children: change
-                    .map(
-                      (e) => Row(
-                        children: [
-                          Text(e.keys.first.toString()),
-                          const Text('円: ×'),
-                          Text(e.values.first.toString()),
-                        ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 1.0, color: Colors.grey),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('お釣り'),
+                      SizedBox(
+                        height: 165,
+                        width: 100,
+                        child: ListView(
+                          children: change
+                              .map(
+                                (e) => Row(
+                                  children: [
+                                    Text(e.keys.first.toString()),
+                                    const Text('円: ×'),
+                                    Text(e.values.first.toString()),
+                                  ],
+                                ),
+                              )
+                              .toList(growable: false),
+                        ),
                       ),
-                    )
-                    .toList(growable: false),
-              ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 175,
+                  width: 160,
+                  child: ListView(
+                    children: [
+                      RadioListTile<PaymentMethod>(
+                        title: Text(paymentMethodJA(PaymentMethod.cash)),
+                        value: PaymentMethod.cash,
+                        groupValue: PaymentMethod
+                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
+                        onChanged: (value) {
+                          setState(() {
+                            a.rrCurrentOrderSetPaymentMethod(
+                                a.ctx, value?.index ?? 0);
+                          });
+                        },
+                      ),
+                      RadioListTile<PaymentMethod>(
+                        title: Text(paymentMethodJA(PaymentMethod.dbarai)),
+                        value: PaymentMethod.dbarai,
+                        groupValue: PaymentMethod
+                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
+                        onChanged: (value) {
+                          setState(() {
+                            a.rrCurrentOrderSetPaymentMethod(
+                                a.ctx, value?.index ?? 0);
+                          });
+                        },
+                      ),
+                      RadioListTile<PaymentMethod>(
+                        title: Text(paymentMethodJA(PaymentMethod.merpay)),
+                        value: PaymentMethod.merpay,
+                        groupValue: PaymentMethod
+                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
+                        onChanged: (value) {
+                          setState(() {
+                            a.rrCurrentOrderSetPaymentMethod(
+                                a.ctx, value?.index ?? 0);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(

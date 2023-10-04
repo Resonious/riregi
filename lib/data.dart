@@ -44,8 +44,15 @@ typedef RRCurrentOrderLenNative = Uint32 Function(Pointer<Void>);
 typedef RRCurrentOrderLen = int Function(Pointer<Void>);
 typedef RRCurrentOrderTotalNative = Int64 Function(Pointer<Void>);
 typedef RRCurrentOrderTotal = int Function(Pointer<Void>);
+typedef RRCurrentOrderPaymentMethodNative = Uint16 Function(Pointer<Void>);
+typedef RRCurrentOrderPaymentMethod = int Function(Pointer<Void>);
+typedef RRCurrentOrderSetPaymentMethodNative = Void Function(
+    Pointer<Void>, Uint16);
+typedef RRCurrentOrderSetPaymentMethod = void Function(Pointer<Void>, int);
 typedef RROrderTotalNative = Int64 Function(Pointer<Void>, Uint64);
 typedef RROrderTotal = int Function(Pointer<Void>, int);
+typedef RROrderPaymentMethodNative = Uint16 Function(Pointer<Void>, Uint64);
+typedef RROrderPaymentMethod = int Function(Pointer<Void>, int);
 typedef RROrderTimestampNative = Int64 Function(Pointer<Void>, Uint64);
 typedef RROrderTimestamp = int Function(Pointer<Void>, int);
 typedef RRAddItemToOrderNative = Int Function(Pointer<Void>, Uint32);
@@ -82,7 +89,10 @@ class ActiveAppState {
   late final RROrdersLen rrOrdersLen;
   late final RRCurrentOrderLen rrCurrentOrderLen;
   late final RRCurrentOrderTotal rrCurrentOrderTotal;
+  late final RRCurrentOrderPaymentMethod rrCurrentOrderPaymentMethod;
+  late final RRCurrentOrderSetPaymentMethod rrCurrentOrderSetPaymentMethod;
   late final RROrderTotal rrOrderTotal;
+  late final RROrderPaymentMethod rrOrderPaymentMethod;
   late final RROrderTimestamp rrOrderTimestamp;
   late final RRAddItemToOrder rrAddItemToOrder;
   late final RRRemoveOrderItem rrRemoveOrderItem;
@@ -128,8 +138,17 @@ class ActiveAppState {
     rrCurrentOrderTotal =
         lib.lookupFunction<RRCurrentOrderTotalNative, RRCurrentOrderTotal>(
             "rr_current_order_total");
+    rrCurrentOrderPaymentMethod = lib.lookupFunction<
+        RRCurrentOrderPaymentMethodNative,
+        RRCurrentOrderPaymentMethod>("rr_current_order_payment_method");
+    rrCurrentOrderSetPaymentMethod = lib.lookupFunction<
+        RRCurrentOrderSetPaymentMethodNative,
+        RRCurrentOrderSetPaymentMethod>("rr_current_order_set_payment_method");
     rrOrderTotal =
         lib.lookupFunction<RROrderTotalNative, RROrderTotal>("rr_order_total");
+    rrOrderPaymentMethod =
+        lib.lookupFunction<RROrderPaymentMethodNative, RROrderPaymentMethod>(
+            "rr_order_payment_method");
     rrOrderTimestamp =
         lib.lookupFunction<RROrderTimestampNative, RROrderTimestamp>(
             "rr_order_timestamp");
