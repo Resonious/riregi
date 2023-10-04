@@ -25,7 +25,6 @@ static void dart_method_call_handler(FlMethodChannel* channel,
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else if (strcmp(fl_method_call_get_name(method_call), "getDataPath") == 0) {
-    g_mkdir_with_parents("/home/nigel/p/riregi/.data", 0666);
     g_autoptr(FlValue) result = fl_value_new_string("/home/nigel/p/riregi/.data");
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }

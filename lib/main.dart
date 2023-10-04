@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:ffi';
 
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -29,6 +30,7 @@ class MyApp extends StatefulWidget {
 class _AppState extends State<MyApp> {
   ActiveAppState? app;
   String? dataPath;
+  String? dataError;
 
   @override
   void initState() {
@@ -49,6 +51,9 @@ class _AppState extends State<MyApp> {
           dataPath: dataPath,
         );
         this.dataPath = dataPath;
+
+        final err = app!.rrGetError();
+        if (err.address != 0) dataError = err.toDartString();
       });
     });
   }
@@ -74,7 +79,9 @@ class _AppState extends State<MyApp> {
       ),
       home: app == null
           ? const Scaffold(body: Center(child: Text('読み込み中')))
-          : Scaffold(body: AppFrame(app: app!, dataPath: dataPath!)),
+          : dataError == null
+              ? Scaffold(body: AppFrame(app: app!, dataPath: dataPath!))
+              : Scaffold(body: Center(child: Text(dataError!))),
     );
   }
 }
