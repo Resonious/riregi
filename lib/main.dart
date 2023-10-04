@@ -140,7 +140,7 @@ class _AppFrameState extends State<AppFrame> {
               onPressed: () => setState(() => page = AppPage.menu),
             ),
             _NavButton(
-              icon: Icons.edit_square,
+              icon: Icons.list_alt,
               text: '履歴',
               selected: page == AppPage.orders,
               onPressed: () => setState(() => page = AppPage.orders),
