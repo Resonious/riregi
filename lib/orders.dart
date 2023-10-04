@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 import 'data.dart';
@@ -13,6 +15,14 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
+  late List<Widget> _computedEntries;
+
+  @override
+  void initState() {
+    super.initState();
+    _computedEntries = entries();
+  }
+
   String formatTimestamp(int timestamp) {
     final datetime = DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
     final y = datetime.year;
@@ -87,9 +97,11 @@ class _OrdersPageState extends State<OrdersPage> {
     DateTime? lastDate;
     int runningTotal = 0;
 
+    log("Computing order history");
+
     for (var i = 0; i < ordersLen - 1; i += 1) {
-      final date = DateTime.fromMillisecondsSinceEpoch(
-          a.rrOrderTimestamp(a.ctx, ordersLen - 2 - i));
+      final date =
+          DateTime.fromMillisecondsSinceEpoch(a.rrOrderTimestamp(a.ctx, i));
 
       if (lastDate != null && lastDate.day != date.day) {
         result.add(total(lastDate, runningTotal));
@@ -151,7 +163,7 @@ class _OrdersPageState extends State<OrdersPage> {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: ListView(
-        children: entries(),
+        children: _computedEntries,
       ),
     );
   }
