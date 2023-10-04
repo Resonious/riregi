@@ -45,7 +45,6 @@ class _AppState extends State<MyApp> {
         var libPath = value[0]!;
         var dataPath = value[1]!;
 
-        log('YES!! $value');
         app = ActiveAppState(
           lib: DynamicLibrary.open(libPath),
           dataPath: dataPath,
