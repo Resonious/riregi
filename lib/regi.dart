@@ -9,6 +9,7 @@ enum PaymentMethod {
   cash,
   dbarai,
   merpay,
+  aupay,
 }
 
 String paymentMethodJA(PaymentMethod pm) {
@@ -16,6 +17,7 @@ String paymentMethodJA(PaymentMethod pm) {
     PaymentMethod.cash => "現金",
     PaymentMethod.dbarai => "ｄ払い",
     PaymentMethod.merpay => "メルペイ",
+    PaymentMethod.aupay => "auPAY",
   };
 }
 
@@ -193,47 +195,23 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
                   ),
                 ),
                 SizedBox(
-                  height: 175,
-                  width: 160,
+                  height: 195,
+                  width: 165,
                   child: ListView(
-                    children: [
-                      RadioListTile<PaymentMethod>(
-                        title: Text(paymentMethodJA(PaymentMethod.cash)),
-                        value: PaymentMethod.cash,
-                        groupValue: PaymentMethod
-                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
-                        onChanged: (value) {
-                          setState(() {
-                            a.rrCurrentOrderSetPaymentMethod(
-                                a.ctx, value?.index ?? 0);
-                          });
-                        },
-                      ),
-                      RadioListTile<PaymentMethod>(
-                        title: Text(paymentMethodJA(PaymentMethod.dbarai)),
-                        value: PaymentMethod.dbarai,
-                        groupValue: PaymentMethod
-                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
-                        onChanged: (value) {
-                          setState(() {
-                            a.rrCurrentOrderSetPaymentMethod(
-                                a.ctx, value?.index ?? 0);
-                          });
-                        },
-                      ),
-                      RadioListTile<PaymentMethod>(
-                        title: Text(paymentMethodJA(PaymentMethod.merpay)),
-                        value: PaymentMethod.merpay,
-                        groupValue: PaymentMethod
-                            .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
-                        onChanged: (value) {
-                          setState(() {
-                            a.rrCurrentOrderSetPaymentMethod(
-                                a.ctx, value?.index ?? 0);
-                          });
-                        },
-                      ),
-                    ],
+                    children: PaymentMethod.values
+                        .map((e) => RadioListTile<PaymentMethod>(
+                              title: Text(paymentMethodJA(e)),
+                              value: e,
+                              groupValue: PaymentMethod
+                                  .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
+                              onChanged: (value) {
+                                setState(() {
+                                  a.rrCurrentOrderSetPaymentMethod(
+                                      a.ctx, e.index);
+                                });
+                              },
+                            ))
+                        .toList(growable: false),
                   ),
                 ),
               ],
