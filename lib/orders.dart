@@ -150,11 +150,8 @@ class _OrdersPageState extends State<OrdersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: ListView(
-        children: _computedEntries,
-      ),
+    return ListView(
+      children: _computedEntries,
     );
   }
 }
