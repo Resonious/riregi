@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'data.dart';
 import 'regi.dart';
@@ -16,6 +17,12 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   late List<Widget> _computedEntries;
+
+  final currency = NumberFormat.simpleCurrency(
+    locale: 'ja_JP',
+    name: 'JPY',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -63,24 +70,13 @@ class _OrdersPageState extends State<OrdersPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(justTheDate(lastDate),
+              SelectableText(justTheDate(lastDate),
                   style: const TextStyle(fontWeight: FontWeight.bold)),
-              const Text('合計', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(
-                width: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Icon(
-                      Icons.currency_yen,
-                      size: 10,
-                    ),
-                    SelectableText(
-                      runningTotal.toString(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+              const SelectableText('合計',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              SelectableText(
+                currency.format(runningTotal),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -117,27 +113,27 @@ class _OrdersPageState extends State<OrdersPage> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
                 children: [
-                  Text(
-                    formatTimestamp(a.rrOrderTimestamp(a.ctx, i)),
-                  ),
-                  Text(
-                    paymentMethodJA(
-                        PaymentMethod.values[a.rrOrderPaymentMethod(a.ctx, i)]),
+                  SizedBox(
+                    width: 150,
+                    child: SelectableText(
+                      formatTimestamp(a.rrOrderTimestamp(a.ctx, i)),
+                    ),
                   ),
                   SizedBox(
-                    width: 80,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const Icon(
-                          Icons.currency_yen,
-                          size: 10,
-                        ),
-                        SelectableText(a.rrOrderTotal(a.ctx, i).toString()),
-                      ],
+                    width: 60,
+                    child: SelectableText(
+                      paymentMethodJA(PaymentMethod
+                          .values[a.rrOrderPaymentMethod(a.ctx, i)]),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 60,
+                    child: SelectableText(
+                      currency.format(a.rrOrderTotal(a.ctx, i)),
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ],
