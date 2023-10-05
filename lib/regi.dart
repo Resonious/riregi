@@ -95,18 +95,9 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
                   ),
                 ),
                 Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.currency_yen,
-                        size: 20,
-                      ),
-                      Text(
-                        a.rrCurrentOrderTotal(a.ctx).toString(),
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ],
+                  child: Text(
+                    currency.format(a.rrCurrentOrderTotal(a.ctx)),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
               ],
@@ -124,12 +115,11 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
                 Expanded(
                   child: Row(
                     children: [
-                      const SizedBox(
-                        width: 20,
-                        child: Icon(
-                          Icons.currency_yen,
-                          size: 20.0,
-                          semanticLabel: 'JPY',
+                      SizedBox(
+                        width: 16,
+                        child: Text(
+                          currency.currencySymbol,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
                       Expanded(
@@ -347,15 +337,13 @@ class _RegiPageState extends State<RegiPage> {
                           child: ListView(
                             children: List<Widget>.generate(
                               orderItemsCount,
-                              (i) => Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.currency_yen,
-                                    size: 10,
-                                  ),
-                                  Text(a.rrOrderItemPrice(a.ctx, i).toString()),
-                                ],
+                              (i) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                child: Text(
+                                  currency.format(a.rrOrderItemPrice(a.ctx, i)),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                               growable: false,
                             ),
@@ -368,17 +356,12 @@ class _RegiPageState extends State<RegiPage> {
                               top: BorderSide(width: 1.0, color: Colors.grey),
                             ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.currency_yen,
-                                size: 10,
-                              ),
-                              Text(a.rrCurrentOrderTotal(a.ctx).toString(),
-                                  style: Theme.of(context).textTheme.bodyLarge),
-                            ],
-                          ),
+                          child: Center(
+                              child: Text(
+                            currency.format(a.rrCurrentOrderTotal(a.ctx)),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.right,
+                          )),
                         ),
                       ],
                     ),

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
@@ -12,6 +13,12 @@ import 'package:image/image.dart' as img;
 import 'package:ffi/ffi.dart';
 
 import 'data.dart';
+
+final currency = NumberFormat.simpleCurrency(
+  locale: 'ja_JP',
+  name: 'JPY',
+  decimalDigits: 0,
+);
 
 String getRandString(int len) {
   var random = Random.secure();

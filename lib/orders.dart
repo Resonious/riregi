@@ -1,10 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'data.dart';
 import 'regi.dart';
+import 'menu.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key, required this.app});
@@ -17,12 +17,6 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage> {
   late List<Widget> _computedEntries;
-
-  final currency = NumberFormat.simpleCurrency(
-    locale: 'ja_JP',
-    name: 'JPY',
-    decimalDigits: 0,
-  );
 
   @override
   void initState() {
