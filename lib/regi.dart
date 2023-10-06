@@ -152,59 +152,65 @@ class _OrderFinishModalState extends State<_OrderFinishModal> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1.0, color: Colors.grey),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text('お釣り'),
-                      SizedBox(
-                        height: 165,
-                        width: 100,
-                        child: ListView(
-                          children: change
-                              .map(
-                                (e) => Row(
-                                  children: [
-                                    Text(e.keys.first.toString()),
-                                    const Text('円: ×'),
-                                    Text(e.values.first.toString()),
-                                  ],
-                                ),
-                              )
-                              .toList(growable: false),
-                        ),
+          Flexible(
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 1.0, color: Colors.grey),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        children: [
+                          const Text('お釣り'),
+                          Expanded(
+                            child: SizedBox(
+                              width: 100,
+                              child: ListView(
+                                children: change
+                                    .map(
+                                      (e) => Row(
+                                        children: [
+                                          Text(e.keys.first.toString()),
+                                          const Text('円: ×'),
+                                          Text(e.values.first.toString()),
+                                        ],
+                                      ),
+                                    )
+                                    .toList(growable: false),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 165,
+                      child: ListView(
+                        children: PaymentMethod.values
+                            .map((e) => RadioListTile<PaymentMethod>(
+                                  title: Text(paymentMethodJA(e)),
+                                  value: e,
+                                  groupValue: PaymentMethod.values[
+                                      a.rrCurrentOrderPaymentMethod(a.ctx)],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      a.rrCurrentOrderSetPaymentMethod(
+                                          a.ctx, e.index);
+                                    });
+                                  },
+                                ))
+                            .toList(growable: false),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  height: 195,
-                  width: 165,
-                  child: ListView(
-                    children: PaymentMethod.values
-                        .map((e) => RadioListTile<PaymentMethod>(
-                              title: Text(paymentMethodJA(e)),
-                              value: e,
-                              groupValue: PaymentMethod
-                                  .values[a.rrCurrentOrderPaymentMethod(a.ctx)],
-                              onChanged: (value) {
-                                setState(() {
-                                  a.rrCurrentOrderSetPaymentMethod(
-                                      a.ctx, e.index);
-                                });
-                              },
-                            ))
-                        .toList(growable: false),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           Padding(
@@ -264,16 +270,18 @@ class _RegiPageState extends State<RegiPage> {
   @override
   Widget build(BuildContext context) {
     final a = widget.app;
+    final screen = MediaQuery.of(context).size;
 
     final menuItemsCount = a.rrMenuLen(a.ctx);
     final orderItemsCount = a.rrCurrentOrderLen(a.ctx);
 
-    return Column(
+    return Flex(
+      direction: screen.width > screen.height ? Axis.horizontal : Axis.vertical,
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(
-          height: 250,
+        Expanded(
+          flex: 1,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -372,66 +380,66 @@ class _RegiPageState extends State<RegiPage> {
           ),
         ),
         Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(width: 1.0, color: Colors.grey),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 30, child: Text('メニュー')),
-                      Expanded(
-                          child: menuItemsCount == 0
-                              ? const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'メニューが空っぽです。',
-                                        style: TextStyle(color: Colors.grey),
-                                      ),
-                                      Text(
-                                        '商品を追加してください。',
-                                        style: TextStyle(color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : GridView.builder(
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 4,
-                                    mainAxisSpacing: 10,
-                                    crossAxisSpacing: 10,
-                                  ),
-                                  itemCount: menuItemsCount,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    return MenuItem(
-                                      name: a
-                                          .rrMenuItemName(a.ctx, index)
-                                          .toDartString(),
-                                      price: a.rrMenuItemPrice(a.ctx, index),
-                                      imagePath: a
-                                          .rrMenuItemImagePath(a.ctx, index)
-                                          .toDartString(),
-                                      onPressed: () {
-                                        setState(() {
-                                          a.rrAddItemToOrder(a.ctx, index);
-                                        });
-                                      },
-                                    );
-                                  },
-                                )),
-                    ],
-                  ),
+          flex: 1,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(width: 1.0, color: Colors.grey),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 30, child: Text('メニュー')),
+                    Expanded(
+                        child: menuItemsCount == 0
+                            ? const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'メニューが空っぽです。',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                    Text(
+                                      '商品を追加してください。',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 4,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                ),
+                                itemCount: menuItemsCount,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return MenuItem(
+                                    name: a
+                                        .rrMenuItemName(a.ctx, index)
+                                        .toDartString(),
+                                    price: a.rrMenuItemPrice(a.ctx, index),
+                                    imagePath: a
+                                        .rrMenuItemImagePath(a.ctx, index)
+                                        .toDartString(),
+                                    onPressed: () {
+                                      setState(() {
+                                        a.rrAddItemToOrder(a.ctx, index);
+                                      });
+                                    },
+                                  );
+                                },
+                              )),
+                  ],
                 ),
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -560,10 +560,11 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     final a = widget.app;
+    final screen = MediaQuery.of(context).size;
 
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 5,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: screen.width ~/ 80,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
       ),
