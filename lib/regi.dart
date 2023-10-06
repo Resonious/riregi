@@ -393,47 +393,48 @@ class _RegiPageState extends State<RegiPage> {
                   children: [
                     const SizedBox(height: 30, child: Text('メニュー')),
                     Expanded(
-                        child: menuItemsCount == 0
-                            ? const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'メニューが空っぽです。',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                    Text(
-                                      '商品を追加してください。',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 4,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10,
-                                ),
-                                itemCount: menuItemsCount,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return MenuItem(
-                                    name: a
-                                        .rrMenuItemName(a.ctx, index)
-                                        .toDartString(),
-                                    price: a.rrMenuItemPrice(a.ctx, index),
-                                    imagePath: a
-                                        .rrMenuItemImagePath(a.ctx, index)
-                                        .toDartString(),
-                                    onPressed: () {
-                                      setState(() {
-                                        a.rrAddItemToOrder(a.ctx, index);
-                                      });
-                                    },
-                                  );
-                                },
-                              )),
+                      child: menuItemsCount == 0
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'メニューが空っぽです。',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  Text(
+                                    '商品を追加してください。',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                              ),
+                              itemCount: menuItemsCount,
+                              itemBuilder: (BuildContext context, int index) {
+                                return MenuItem(
+                                  name: a
+                                      .rrMenuItemName(a.ctx, index)
+                                      .toDartString(),
+                                  price: a.rrMenuItemPrice(a.ctx, index),
+                                  imagePath: a
+                                      .rrMenuItemImagePath(a.ctx, index)
+                                      .toDartString(),
+                                  onPressed: () {
+                                    setState(() {
+                                      a.rrAddItemToOrder(a.ctx, index);
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                    ),
                   ],
                 ),
               ),
