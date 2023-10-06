@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'package:ffi/ffi.dart';
@@ -304,8 +306,9 @@ class _RegiPageState extends State<RegiPage> {
                             )
                           : GridView.builder(
                               gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    screen.width > screen.height ? 5 : 4,
                                 mainAxisSpacing: 10,
                                 crossAxisSpacing: 10,
                               ),
@@ -411,8 +414,9 @@ class _RegiPageState extends State<RegiPage> {
                             )
                           : GridView.builder(
                               gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    screen.width > screen.height ? 6 : 4,
                                 mainAxisSpacing: 10,
                                 crossAxisSpacing: 10,
                               ),
