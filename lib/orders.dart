@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
+import 'package:ffi/ffi.dart';
+
 import 'data.dart';
 import 'regi.dart';
 import 'menu.dart';
@@ -99,38 +101,118 @@ class _OrdersPageState extends State<OrdersPage> {
       }
 
       result.add(
-        Padding(
-          padding: const EdgeInsets.all(5),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(width: 1.0, color: Colors.grey),
-            ),
+        Material(
+          child: InkWell(
+            onTap: () {
+              final screen = MediaQuery.of(context).size;
+              final orderItemsCount = a.rrOrderLen(a.ctx, i);
+
+              // TODO: check for error..?
+              a.rrViewOrder(a.ctx, i);
+
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Padding(
+                  padding: MediaQuery.of(context).viewInsets,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 30,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  formatTimestamp(a.rrOrderTimestamp(a.ctx, i)),
+                                ),
+                                const Text(" － "),
+                                Text(
+                                  currency.format(a.rrOrderTotal(a.ctx, i)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Divider(thickness: 1),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: orderItemsCount == 0
+                              ? const Center(
+                                  child: Text(
+                                    '空',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                )
+                              : GridView.builder(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        screen.width > screen.height ? 5 : 4,
+                                    mainAxisSpacing: 10,
+                                    crossAxisSpacing: 10,
+                                  ),
+                                  itemCount: orderItemsCount,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return MenuItem(
+                                      name: a
+                                          .rrViewItemName(a.ctx, index)
+                                          .toDartString(),
+                                      price: a.rrViewItemPrice(a.ctx, index),
+                                      imagePath: a
+                                          .rrViewItemImagePath(a.ctx, index)
+                                          .toDartString(),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
             child: Padding(
               padding: const EdgeInsets.all(5),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: SelectableText(
-                      formatTimestamp(a.rrOrderTimestamp(a.ctx, i)),
-                    ),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1.0, color: Colors.grey),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          formatTimestamp(a.rrOrderTimestamp(a.ctx, i)),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 60,
+                        child: Text(
+                          paymentMethodJA(PaymentMethod
+                              .values[a.rrOrderPaymentMethod(a.ctx, i)]),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 60,
+                        child: Text(
+                          currency.format(a.rrOrderTotal(a.ctx, i)),
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(
-                    width: 60,
-                    child: SelectableText(
-                      paymentMethodJA(PaymentMethod
-                          .values[a.rrOrderPaymentMethod(a.ctx, i)]),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 60,
-                    child: SelectableText(
-                      currency.format(a.rrOrderTotal(a.ctx, i)),
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

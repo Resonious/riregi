@@ -49,6 +49,8 @@ typedef RRCurrentOrderPaymentMethod = int Function(Pointer<Void>);
 typedef RRCurrentOrderSetPaymentMethodNative = Void Function(
     Pointer<Void>, Uint16);
 typedef RRCurrentOrderSetPaymentMethod = void Function(Pointer<Void>, int);
+typedef RROrderLenNative = Uint32 Function(Pointer<Void>, Uint64);
+typedef RROrderLen = int Function(Pointer<Void>, int);
 typedef RROrderTotalNative = Int64 Function(Pointer<Void>, Uint64);
 typedef RROrderTotal = int Function(Pointer<Void>, int);
 typedef RROrderPaymentMethodNative = Uint16 Function(Pointer<Void>, Uint64);
@@ -66,6 +68,15 @@ typedef RROrderItemImagePathNative = Pointer<Utf8> Function(
 typedef RROrderItemImagePath = Pointer<Utf8> Function(Pointer<Void>, int);
 typedef RROrderItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
 typedef RROrderItemPrice = int Function(Pointer<Void>, int);
+typedef RRViewOrderNative = Int Function(Pointer<Void>, Uint64);
+typedef RRViewOrder = int Function(Pointer<Void>, int);
+typedef RRViewItemNameNative = Pointer<Utf8> Function(Pointer<Void>, Uint32);
+typedef RRViewItemName = Pointer<Utf8> Function(Pointer<Void>, int);
+typedef RRViewItemImagePathNative = Pointer<Utf8> Function(
+    Pointer<Void>, Uint32);
+typedef RRViewItemImagePath = Pointer<Utf8> Function(Pointer<Void>, int);
+typedef RRViewItemPriceNative = Int64 Function(Pointer<Void>, Uint32);
+typedef RRViewItemPrice = int Function(Pointer<Void>, int);
 typedef RRCompleteOrderNative = Int Function(Pointer<Void>);
 typedef RRCompleteOrder = int Function(Pointer<Void>);
 
@@ -91,6 +102,7 @@ class ActiveAppState {
   late final RRCurrentOrderTotal rrCurrentOrderTotal;
   late final RRCurrentOrderPaymentMethod rrCurrentOrderPaymentMethod;
   late final RRCurrentOrderSetPaymentMethod rrCurrentOrderSetPaymentMethod;
+  late final RROrderLen rrOrderLen;
   late final RROrderTotal rrOrderTotal;
   late final RROrderPaymentMethod rrOrderPaymentMethod;
   late final RROrderTimestamp rrOrderTimestamp;
@@ -99,6 +111,10 @@ class ActiveAppState {
   late final RROrderItemName rrOrderItemName;
   late final RROrderItemImagePath rrOrderItemImagePath;
   late final RROrderItemPrice rrOrderItemPrice;
+  late final RRViewOrder rrViewOrder;
+  late final RRViewItemName rrViewItemName;
+  late final RRViewItemImagePath rrViewItemImagePath;
+  late final RRViewItemPrice rrViewItemPrice;
   late final RRCompleteOrder rrCompleteOrder;
 
   late final Pointer<Void> ctx;
@@ -144,6 +160,8 @@ class ActiveAppState {
     rrCurrentOrderSetPaymentMethod = lib.lookupFunction<
         RRCurrentOrderSetPaymentMethodNative,
         RRCurrentOrderSetPaymentMethod>("rr_current_order_set_payment_method");
+    rrOrderLen =
+        lib.lookupFunction<RROrderLenNative, RROrderLen>("rr_order_len");
     rrOrderTotal =
         lib.lookupFunction<RROrderTotalNative, RROrderTotal>("rr_order_total");
     rrOrderPaymentMethod =
@@ -167,6 +185,16 @@ class ActiveAppState {
     rrOrderItemPrice =
         lib.lookupFunction<RROrderItemPriceNative, RROrderItemPrice>(
             "rr_order_item_price");
+    rrViewOrder =
+        lib.lookupFunction<RRViewOrderNative, RRViewOrder>("rr_view_order");
+    rrViewItemName = lib.lookupFunction<RRViewItemNameNative, RRViewItemName>(
+        "rr_view_item_name");
+    rrViewItemImagePath =
+        lib.lookupFunction<RRViewItemImagePathNative, RRViewItemImagePath>(
+            "rr_view_item_image_path");
+    rrViewItemPrice =
+        lib.lookupFunction<RRViewItemPriceNative, RRViewItemPrice>(
+            "rr_view_item_price");
     rrCompleteOrder =
         lib.lookupFunction<RRCompleteOrderNative, RRCompleteOrder>(
             "rr_complete_order");
